@@ -1,0 +1,29 @@
+
+//program to print letters from ASCII table
+//for (i = begin; i < end; ++i)
+//  print i
+
+.constant
+    begin   97  //'a'
+    end     121 //'z'
+    add     1
+.end-constant
+
+.main
+        LDC_W begin
+        
+next:   DUP
+        OUT
+        DUP
+        LDC_W end
+        ISUB
+        IFEQ done
+        LDC_W add
+        IADD
+        GOTO next
+        
+done:   POP
+        HALT
+
+.end-main
+ 

@@ -1,0 +1,27 @@
+//program to print what you input from the keyboard. 
+//terminates on wildcard 'x'
+
+//.constant                 //using a constant
+//    terminator  0x78      //'x'
+//.end-constant
+
+.main
+
+.var                        //using a variable instead
+    terminator
+.end-var
+
+        BIPUSH 0x78         //terminates on 'x'
+        ISTORE terminator
+start:  IN
+        DUP                 //compare if terminator, end
+        ILOAD terminator    //I could have used "LDC_W terminator" instead
+        IF_ICMPEQ end
+        DUP                 //compare if null, keep reading keyboard reg
+        IFEQ start
+        OUT                 //otherwise print out value and keep reading
+        GOTO start
+end:    POP
+        HALT
+
+.end-main
