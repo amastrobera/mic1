@@ -1,0 +1,9 @@
+#! /bin/bash
+echo "==== build and run IJVM simulation ===="
+if [ $# -gt 0 ]; then
+	echo "  >> building $1 IJVM ... "
+	java ijvmasm "source_jas/$1.jas" "source_ijvm/$1.ijvm"
+	echo "  >> launching mic1sim on $1 ... "
+	java mic1sim mic1ijvm.mic1 "source_ijvm/$1.ijvm" & 
+fi
+

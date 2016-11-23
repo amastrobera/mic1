@@ -1,0 +1,26 @@
+#! /bin/bash
+
+function fHelp() {
+	echo "  >> help"
+	echo "  >> $0 mal_file jas_file"
+	echo "  >>    mal_file :	adaptation of mic1ijvm.mal file (no extension)"
+	echo "  >>    jas_file :	ivjm language file with your code (no extention)" 
+}
+
+function fLaunch() {
+	echo "  >> assemble the IJVM program for $2 ..."
+	java ijvmasm "source_jas/$2.jas" "source_ijvm/$2.ijvm"
+	echo "  >> assemble the Micro program $1 ... "
+	java mic1asm "$1.mal" "$1.mic1"
+	echo "  >> running the Simulator $1 on $2 ... "
+	java mic1sim "$1.mic1" "source_ijvm/$2.ijvm" & 
+}
+
+#main
+echo "==== build and run MIC-1 simulation ===="
+if [ $# -eq 2 ]; then
+	fLaunch $@
+else
+	fHelp
+fi
+

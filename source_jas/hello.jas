@@ -1,0 +1,29 @@
+.main				// start of program
+
+start:	BIPUSH 0x48	// H
+	OUT
+	BIPUSH 0x65	// e
+	OUT
+	
+	BIPUSH 0x6C	// l
+	OUT
+	BIPUSH 0x6C	// l
+	OUT
+	BIPUSH 0x6F	// o
+	OUT
+	BIPUSH 0x20	// " "
+	OUT
+	BIPUSH 0x77	// w
+	OUT
+	BIPUSH 0x6F	// o
+	OUT
+	BIPUSH 0x72	// r
+	OUT
+	BIPUSH 0x6C	// l
+	OUT
+	BIPUSH 0x64	// d
+	OUT
+	BIPUSH 33		// !
+	OUT
+	HALT
+.end-main
