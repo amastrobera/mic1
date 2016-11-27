@@ -1,0 +1,437 @@
+//todo:
+//      fix loop in "count"
+//      division in "avg"
+//      make functions generic for any number of variables
+//          * printList
+//          * min
+//          * max
+//          * avg
+//          * count
+
+//elenco: {1,2,3,4} ->
+//A) MIN: 1, MAX: 4
+//B) AVG: 2
+//C) NMIN: 1, NMAX: 1
+
+.constant
+    OBJREF 0xCAFE
+.end-constant
+
+
+.main
+
+.var
+    rMin
+    rMax
+    rAvg
+    rCntMin
+    rCntMax
+.end-var
+
+list:       LDC_W OBJREF
+            BIPUSH 0x31
+            BIPUSH 0x32
+            BIPUSH 0x33
+            BIPUSH 0x34
+            INVOKEVIRTUAL printList
+
+
+calcMin:    LDC_W OBJREF
+            BIPUSH 0x31
+            BIPUSH 0x32
+            BIPUSH 0x33
+            BIPUSH 0x34	
+            INVOKEVIRTUAL min
+            ISTORE rMin
+
+calcMax:    LDC_W OBJREF
+            BIPUSH 0x31
+            BIPUSH 0x32
+            BIPUSH 0x33
+            BIPUSH 0x34	
+            INVOKEVIRTUAL max
+            ISTORE rMax
+
+//calcAvg:    LDC_W OBJREF
+//          BIPUSH 0x31
+//          BIPUSH 0x32
+//          BIPUSH 0x33
+//          BIPUSH 0x34	
+//          INVOKEVIRTUAL avg
+//          ISTORE rAvg
+
+//cntMin:     LDC_W OBJREF
+//            ILOAD rMin
+//            BIPUSH 0x31
+//            BIPUSH 0x32
+//            BIPUSH 0x33
+//            BIPUSH 0x34
+//            INVOKEVIRTUAL count
+//            ISTORE rCntMin
+
+//cntMin:     LDC_W OBJREF
+//            ILOAD rMax
+//            BIPUSH 0x31
+//            BIPUSH 0x32
+//            BIPUSH 0x33
+//            BIPUSH 0x34	
+//            INVOKEVIRTUAL count
+//            ISTORE rCntMax
+
+print:      LDC_W OBJREF
+            ILOAD rMin
+            ILOAD rMax
+            ILOAD rAvg
+            ILOAD rCntMin
+            ILOAD rCntMax
+            INVOKEVIRTUAL printResults
+
+done:       HALT
+.end-main
+
+
+//calc functions
+
+.method min(e1,e2,e3,e4)
+.var
+        rVal
+.end-var
+
+start:  ILOAD e1
+        ISTORE rVal
+
+iter2:  ILOAD e2
+        ILOAD rVal
+        ISUB
+        IFLT calc2
+        GOTO iter3
+calc2:  ILOAD e2
+        ISTORE rVal
+
+iter3:  ILOAD e3
+        ILOAD rVal
+        ISUB
+        IFLT calc3
+        GOTO iter4
+calc3:  ILOAD e4
+        ISTORE rVal
+
+iter4:  ILOAD e4
+        ILOAD rVal
+        ISUB
+        IFLT calc4
+        GOTO ret
+calc4:  ILOAD e2
+        ISTORE rVal
+
+ret:    ILOAD rVal
+        IRETURN
+
+.end-method
+
+
+.method max(e1,e2,e3,e4)
+.var
+        rVal
+.end-var
+
+start:  ILOAD e1
+        ISTORE rVal
+
+iter2:  ILOAD rVal
+        ILOAD e2
+        ISUB
+        IFLT calc2
+        GOTO iter3
+calc2:  ILOAD e2
+        ISTORE rVal
+
+iter3:  ILOAD rVal
+        ILOAD e3
+        ISUB
+        IFLT calc3
+        GOTO iter4
+calc3:  ILOAD e4
+        ISTORE rVal
+
+iter4:  ILOAD rVal
+        ILOAD e4
+        ISUB
+        IFLT calc4
+        GOTO ret
+calc4:  ILOAD e2
+        ISTORE rVal
+
+ret:    ILOAD rVal
+        IRETURN
+.end-method
+
+
+.method avg(e1,e2,e3,e4)
+.var
+    sum
+    num
+.end-var
+
+    BIPUSH 0x34
+    ISTORE num
+    BIPUSH 0x30
+    ISTORE sum
+    
+    ILOAD e1
+    ILOAD sum
+    IADD
+    ISTORE sum
+    
+    ILOAD e2
+    ILOAD sum
+    IADD
+    ISTORE sum
+    
+    ILOAD e3
+    ILOAD sum
+    IADD
+    ISTORE sum
+    
+    ILOAD e4
+    ILOAD sum
+    IADD
+    ISTORE sum
+
+//    ILOAD sum
+//    ILOAD num
+//    IDIV
+    
+    IRETURN
+.end-method
+
+
+.method count(rVal,e1,e2,e3,e4)
+.var 
+    cnt
+.end-var
+
+        BIPUSH 0x30
+        ISTORE cnt
+
+        ILOAD e1
+        ILOAD e2
+        ILOAD e3
+        ILOAD e4
+
+loop:   DUP
+        LDC_W OBJREF
+        IF_ICMPEQ done
+        ILOAD rVal
+        IF_ICMPEQ add
+        GOTO loop
+
+add:    BIPUSH 0x31
+        ILOAD cnt
+        IADD
+        ISTORE cnt
+        GOTO loop
+
+done:   ILOAD cnt
+        IRETURN
+.end-method
+
+
+//printing fuctions
+
+.method printList(e1,e2,e3,e4)
+//elenco: {1,2,3,4} ->
+    BIPUSH 0x65
+    OUT
+    BIPUSH 0x6C
+    OUT
+    BIPUSH 0x65
+    OUT
+    BIPUSH 0x6E
+    OUT
+    BIPUSH 0x63
+    OUT
+    BIPUSH 0x6F
+    OUT
+    
+    BIPUSH 0x3A
+    OUT
+    BIPUSH 0x20
+    OUT
+
+    BIPUSH 0x7B
+    OUT
+    ILOAD e1
+    OUT
+    BIPUSH 0x2C
+    OUT
+    ILOAD e2
+    OUT
+    BIPUSH 0x2C
+    OUT
+    ILOAD e3
+    OUT
+    BIPUSH 0x2C
+    OUT
+    ILOAD e4
+    OUT
+    BIPUSH 0x7D
+    OUT
+
+    BIPUSH 0x20
+    OUT
+    BIPUSH 0x2D
+    OUT
+    BIPUSH 0x3E
+    OUT
+    
+    BIPUSH 0xA
+    OUT
+
+    IRETURN
+.end-method
+
+.method printResults(rMin,rMax,rAvg,rCntMin,rCntMax)
+
+    LDC_W OBJREF
+    ILOAD rMin
+    ILOAD rMax
+    INVOKEVIRTUAL printMinMax
+    
+    LDC_W OBJREF
+    ILOAD rAvg
+    INVOKEVIRTUAL printAvg
+
+    LDC_W OBJREF
+    ILOAD rCntMin
+    ILOAD rCntMax
+    INVOKEVIRTUAL printCntMinMax
+    
+.end-method
+
+
+.method printMinMax(rMin, rMax)
+//A) MIN: 1, MAX: 4
+        BIPUSH 0x41
+        OUT
+        BIPUSH 0x29
+        OUT
+        BIPUSH 0x20
+        OUT
+
+        BIPUSH 0x4D
+        OUT
+        BIPUSH 0x49
+        OUT
+        BIPUSH 0x4E
+        OUT
+        BIPUSH 0x3A
+        OUT
+        BIPUSH 0x20
+        OUT
+        ILOAD rMin
+        OUT
+
+        BIPUSH 0x2C
+        OUT
+        BIPUSH 0x20
+        OUT
+        
+        BIPUSH 0x4D
+        OUT
+        BIPUSH 0x41
+        OUT
+        BIPUSH 0x58
+        OUT
+        BIPUSH 0x3A
+        OUT
+        BIPUSH 0x20
+        OUT
+        ILOAD rMax
+        OUT
+        
+        BIPUSH 0xA
+        OUT 
+        
+        IRETURN
+.end-method
+
+.method printAvg(rAvg)
+//B) AVG: 5
+        BIPUSH 0x42
+        OUT
+        BIPUSH 0x29
+        OUT
+        BIPUSH 0x20
+        OUT
+
+        BIPUSH 0x41
+        OUT
+        BIPUSH 0x56
+        OUT
+        BIPUSH 0x47
+        OUT
+        BIPUSH 0x3A
+        OUT
+        BIPUSH 0x20
+        OUT
+        ILOAD rAvg
+        OUT
+        
+        BIPUSH 0xA
+        OUT 
+        
+        IRETURN
+.end-method
+
+.method printCntMinMax(rCntMin, rCntMax)
+//C) NMIN: 1, NMAX: 4
+        BIPUSH 0x43
+        OUT
+        BIPUSH 0x29
+        OUT
+        BIPUSH 0x20
+        OUT
+
+        BIPUSH 0x4E
+        OUT
+        BIPUSH 0x4D
+        OUT
+        BIPUSH 0x49
+        OUT
+        BIPUSH 0x4E
+        OUT
+        BIPUSH 0x3A
+        OUT
+        BIPUSH 0x20
+        OUT
+        ILOAD rCntMin
+        OUT
+
+        BIPUSH 0x2C
+        OUT
+        BIPUSH 0x20
+        OUT
+
+        BIPUSH 0x4E
+        OUT
+        BIPUSH 0x4D
+        OUT
+        BIPUSH 0x41
+        OUT
+        BIPUSH 0x58
+        OUT
+        BIPUSH 0x3A
+        OUT
+        BIPUSH 0x20
+        OUT
+        ILOAD rCntMax
+        OUT
+        
+        BIPUSH 0xA
+        OUT 
+        
+        IRETURN
+.end-method
+
+

@@ -1,0 +1,39 @@
+PRIMA PI 2016-2017
+
+Si scriva un programma IJVM che che, dopo aver caricato tramite BIPUSH un elenco di valori (uno alla volta) esegua un ciclo in grado di trovare:
+A) il minimo ed il massimo valore presente nell’elenco
+B) la media (valore intero) dei valori presenti nell’elenco
+C) quante volte il valore massimo ed il valore minimo sono presenti nell’elenco
+
+Non è importante il formato della stampa, ma l’ideale sarebbe qualcosa di simile agli esempi di esecuzione.
+
+Esempio di caricamento:
+
+elenco: {1,2,3,4} ->
+
+BIPUSH 0x1
+BIPUSH 0x2
+BIPUSH 0x3
+BIPUSH 0x4
+
+Esempi di esecuzione:
+
+elenco: {1,2,3,4} ->
+A) MIN: 1, MAX: 4
+B) AVG: 2
+C) NMIN: 1, NMAX: 1
+
+elenco: {1,1,1,2} ->
+A) MIN: 1, MAX: 2
+B) AVG: 1
+C) NMIN: 3, NMAX: 1
+
+elenco: {40,10,30,10} ->
+A) MIN: 10, MAX: 44
+B) AVG: 2
+C) NMIN: 2, NMAX: 1
+
+elenco: {91,1,1,1,1,1,1,1,1,1} ->
+A) MIN: 1, MAX: 91
+B) AVG: 10
+C) NMIN: 9, NMAX: 1
