@@ -1,0 +1,71 @@
+//testing what it means to use ISUB
+
+.constant
+    OBJREF 0x00
+.end-constant
+
+.main
+
+.var
+        var1
+        var2
+.end-var
+
+        BIPUSH 0x36 
+        ISTORE var1     //=6
+        BIPUSH 0x31
+        ISTORE var2     //=1
+
+
+ex1:    ILOAD var1      //6-1
+        ILOAD var2
+        ISUB
+        IFLT less1
+more1:  LDC_W OBJREF
+        ILOAD var1
+        ILOAD var2
+        INVOKEVIRTUAL printMore //6 > 1
+        GOTO done
+
+less1:  LDC_W OBJREF
+        ILOAD var1
+        ILOAD var2
+        INVOKEVIRTUAL printLess  //6 < 1 //error
+        GOTO done
+
+done:
+
+        HALT
+        
+.end-main
+
+
+
+.method printLess(var1,var2)
+
+        ILOAD var1
+        OUT
+        BIPUSH 0x3C
+        OUT
+        ILOAD var2
+        OUT
+        BIPUSH 0xA
+        OUT
+        
+        IRETURN
+.end-method
+
+
+.method printMore(var1,var2)
+
+        ILOAD var1
+        OUT
+        BIPUSH 0x3E
+        OUT
+        ILOAD var2
+        OUT
+        BIPUSH 0xA
+        OUT
+        
+        IRETURN
+.end-method

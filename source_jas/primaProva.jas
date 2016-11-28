@@ -1,6 +1,4 @@
 //todo:
-//      fix loop in "count"
-//      division in "avg"
 //      make functions generic for any number of variables
 //          * printList
 //          * min
@@ -8,19 +6,20 @@
 //          * avg
 //          * count
 
-//elenco: {1,2,3,4} ->
-//A) MIN: 1, MAX: 4
-//B) AVG: 2
-//C) NMIN: 1, NMAX: 1
+//Angelo Mastroberardino
+//cp: 10429624
 
 .constant
-    OBJREF 0xCAFE
+    OBJREF 0xCAFE               //lots of it ...
 .end-constant
-
 
 .main
 
 .var
+    var1
+    var2
+    var3
+    var4
     rMin
     rMax
     rAvg
@@ -28,70 +27,105 @@
     rCntMax
 .end-var
 
+init:       BIPUSH 91
+            ISTORE var1
+            BIPUSH 1
+            ISTORE var2
+            BIPUSH 1
+            ISTORE var3
+            BIPUSH 1
+            ISTORE var4
+            BIPUSH 0         //default value for all: null in ascii
+            DUP
+            DUP
+            DUP
+            DUP
+            ISTORE rMin
+            ISTORE rMax
+            ISTORE rAvg
+            ISTORE rCntMin
+            ISTORE rCntMax
+
+
 list:       LDC_W OBJREF
-            BIPUSH 0x31
-            BIPUSH 0x32
-            BIPUSH 0x33
-            BIPUSH 0x34
+            ILOAD var1
+            ILOAD var2
+            ILOAD var3
+            ILOAD var4
             INVOKEVIRTUAL printList
 
-
 calcMin:    LDC_W OBJREF
-            BIPUSH 0x31
-            BIPUSH 0x32
-            BIPUSH 0x33
-            BIPUSH 0x34	
+            ILOAD var1
+            ILOAD var2
+            ILOAD var3
+            ILOAD var4
             INVOKEVIRTUAL min
             ISTORE rMin
 
 calcMax:    LDC_W OBJREF
-            BIPUSH 0x31
-            BIPUSH 0x32
-            BIPUSH 0x33
-            BIPUSH 0x34	
+            ILOAD var1
+            ILOAD var2
+            ILOAD var3
+            ILOAD var4
             INVOKEVIRTUAL max
             ISTORE rMax
 
-//calcAvg:    LDC_W OBJREF
-//          BIPUSH 0x31
-//          BIPUSH 0x32
-//          BIPUSH 0x33
-//          BIPUSH 0x34	
-//          INVOKEVIRTUAL avg
-//          ISTORE rAvg
-
-//cntMin:     LDC_W OBJREF
-//            ILOAD rMin
-//            BIPUSH 0x31
-//            BIPUSH 0x32
-//            BIPUSH 0x33
-//            BIPUSH 0x34
-//            INVOKEVIRTUAL count
-//            ISTORE rCntMin
-
-//cntMin:     LDC_W OBJREF
-//            ILOAD rMax
-//            BIPUSH 0x31
-//            BIPUSH 0x32
-//            BIPUSH 0x33
-//            BIPUSH 0x34	
-//            INVOKEVIRTUAL count
-//            ISTORE rCntMax
-
-print:      LDC_W OBJREF
+            LDC_W OBJREF
             ILOAD rMin
             ILOAD rMax
+            INVOKEVIRTUAL printMinMax
+
+
+calcAvg:    LDC_W OBJREF
+            ILOAD var1
+            ILOAD var2
+            ILOAD var3
+            ILOAD var4
+            INVOKEVIRTUAL avg
+            ISTORE rAvg
+            
+            LDC_W OBJREF
             ILOAD rAvg
+            INVOKEVIRTUAL printAvg
+
+
+cntMin:     LDC_W OBJREF
+            ILOAD rMin
+            ILOAD var1
+            ILOAD var2
+            ILOAD var3
+            ILOAD var4
+            INVOKEVIRTUAL count
+            ISTORE rCntMin
+
+cntMin:     LDC_W OBJREF
+            ILOAD rMax
+            ILOAD var1
+            ILOAD var2
+            ILOAD var3
+            ILOAD var4
+            INVOKEVIRTUAL count
+            ISTORE rCntMax
+
+            LDC_W OBJREF
             ILOAD rCntMin
             ILOAD rCntMax
-            INVOKEVIRTUAL printResults
+            INVOKEVIRTUAL printCntMinMax
+
+
+//print:      LDC_W OBJREF
+//            ILOAD rMin
+//            ILOAD rMax
+//            ILOAD rAvg
+//            ILOAD rCntMin
+//            ILOAD rCntMax
+//            INVOKEVIRTUAL printResults
 
 done:       HALT
 .end-main
 
 
 //calc functions
-
 .method min(e1,e2,e3,e4)
 .var
         rVal
@@ -100,33 +134,27 @@ done:       HALT
 start:  ILOAD e1
         ISTORE rVal
 
-iter2:  ILOAD e2
+        LDC_W OBJREF        
+        ILOAD e4
+        ILOAD e3
+        ILOAD e2
+        ILOAD e1
+
+iter:   DUP
+        LDC_W OBJREF
+        IF_ICMPEQ ret       //end-condition
+        DUP
         ILOAD rVal
         ISUB
-        IFLT calc2
-        GOTO iter3
-calc2:  ILOAD e2
-        ISTORE rVal
+        IFLT calc
+        POP                 //keep current min
+        GOTO iter
+calc:   ISTORE rVal         //new min
+        GOTO iter
 
-iter3:  ILOAD e3
+ret:    POP                 //remove end-loop value
         ILOAD rVal
-        ISUB
-        IFLT calc3
-        GOTO iter4
-calc3:  ILOAD e4
-        ISTORE rVal
-
-iter4:  ILOAD e4
-        ILOAD rVal
-        ISUB
-        IFLT calc4
-        GOTO ret
-calc4:  ILOAD e2
-        ISTORE rVal
-
-ret:    ILOAD rVal
         IRETURN
-
 .end-method
 
 
@@ -138,72 +166,101 @@ ret:    ILOAD rVal
 start:  ILOAD e1
         ISTORE rVal
 
-iter2:  ILOAD rVal
-        ILOAD e2
-        ISUB
-        IFLT calc2
-        GOTO iter3
-calc2:  ILOAD e2
-        ISTORE rVal
-
-iter3:  ILOAD rVal
-        ILOAD e3
-        ISUB
-        IFLT calc3
-        GOTO iter4
-calc3:  ILOAD e4
-        ISTORE rVal
-
-iter4:  ILOAD rVal
+        LDC_W OBJREF        
         ILOAD e4
-        ISUB
-        IFLT calc4
-        GOTO ret
-calc4:  ILOAD e2
-        ISTORE rVal
+        ILOAD e3
+        ILOAD e2
+        ILOAD e1
 
-ret:    ILOAD rVal
+iter:   DUP
+        LDC_W OBJREF
+        IF_ICMPEQ ret       //end-condition
+        DUP
+        ILOAD rVal
+        ISUB
+        IFLT calc
+        ISTORE rVal         //new max
+        GOTO iter
+calc:   POP                 //keep current max
+        GOTO iter
+
+ret:    POP                 //remove end-loop value
+        ILOAD rVal
         IRETURN
 .end-method
 
 
 .method avg(e1,e2,e3,e4)
 .var
-    sum
-    num
+            sum
+            num
+            ret
 .end-var
 
-    BIPUSH 0x34
-    ISTORE num
-    BIPUSH 0x30
-    ISTORE sum
-    
-    ILOAD e1
-    ILOAD sum
-    IADD
-    ISTORE sum
-    
-    ILOAD e2
-    ILOAD sum
-    IADD
-    ISTORE sum
-    
-    ILOAD e3
-    ILOAD sum
-    IADD
-    ISTORE sum
-    
-    ILOAD e4
-    ILOAD sum
-    IADD
-    ISTORE sum
+init:       BIPUSH 4
+            ISTORE num
+            BIPUSH 0
+            ISTORE sum
+            BIPUSH 0
+            ISTORE ret
+            
+            LDC_W OBJREF
+            ILOAD e4
+            ILOAD e3
+            ILOAD e2
+            ILOAD e1
 
-//    ILOAD sum
-//    ILOAD num
-//    IDIV
-    
-    IRETURN
+loop:       DUP
+            LDC_W OBJREF
+            IF_ICMPEQ endloop
+            ILOAD sum
+            IADD
+            ISTORE sum
+            GOTO loop
+endloop:    POP
+          
+            LDC_W OBJREF
+            ILOAD sum
+            ILOAD num
+            INVOKEVIRTUAL divide
+            ISTORE ret
+
+            ILOAD ret
+            IRETURN
 .end-method
+
+
+.method divide(n1,n2)
+.var
+            remain
+            counter
+.end-var
+
+            BIPUSH 0
+            ISTORE counter
+
+            ILOAD n1
+            ISTORE remain
+            
+            ILOAD n2
+            IFEQ divzero
+
+loop:       ILOAD remain
+            ILOAD n2        //divisor
+            ISUB
+            ISTORE remain        
+            ILOAD remain
+            IFLT done
+            IINC counter 1
+            GOTO loop
+
+divzero:    LDC_W OBJREF
+            ISTORE counter
+
+done:       ILOAD counter
+            IRETURN
+.end-method
+
 
 
 .method count(rVal,e1,e2,e3,e4)
@@ -211,28 +268,27 @@ ret:    ILOAD rVal
     cnt
 .end-var
 
-        BIPUSH 0x30
+        BIPUSH 0
         ISTORE cnt
 
+        LDC_W OBJREF //init value
         ILOAD e1
         ILOAD e2
         ILOAD e3
         ILOAD e4
 
 loop:   DUP
-        LDC_W OBJREF
+        LDC_W OBJREF        //end-of-loop condition
         IF_ICMPEQ done
-        ILOAD rVal
+        ILOAD rVal          //found value to count
         IF_ICMPEQ add
         GOTO loop
 
-add:    BIPUSH 0x31
-        ILOAD cnt
-        IADD
-        ISTORE cnt
+add:    IINC cnt 1
         GOTO loop
 
-done:   ILOAD cnt
+done:   POP         //remove init value
+        ILOAD cnt
         IRETURN
 .end-method
 
@@ -261,19 +317,27 @@ done:   ILOAD cnt
 
     BIPUSH 0x7B
     OUT
+    LDC_W OBJREF
     ILOAD e1
+    INVOKEVIRTUAL printNum
     OUT
     BIPUSH 0x2C
     OUT
+    LDC_W OBJREF
     ILOAD e2
+    INVOKEVIRTUAL printNum
     OUT
     BIPUSH 0x2C
     OUT
+    LDC_W OBJREF
     ILOAD e3
+    INVOKEVIRTUAL printNum
     OUT
     BIPUSH 0x2C
     OUT
+    LDC_W OBJREF
     ILOAD e4
+    INVOKEVIRTUAL printNum
     OUT
     BIPUSH 0x7D
     OUT
@@ -306,7 +370,8 @@ done:   ILOAD cnt
     ILOAD rCntMin
     ILOAD rCntMax
     INVOKEVIRTUAL printCntMinMax
-    
+
+    IRETURN    
 .end-method
 
 
@@ -329,8 +394,9 @@ done:   ILOAD cnt
         OUT
         BIPUSH 0x20
         OUT
+        LDC_W OBJREF
         ILOAD rMin
-        OUT
+        INVOKEVIRTUAL printNum
 
         BIPUSH 0x2C
         OUT
@@ -347,9 +413,10 @@ done:   ILOAD cnt
         OUT
         BIPUSH 0x20
         OUT
+        LDC_W OBJREF
         ILOAD rMax
-        OUT
-        
+        INVOKEVIRTUAL printNum
+
         BIPUSH 0xA
         OUT 
         
@@ -375,8 +442,9 @@ done:   ILOAD cnt
         OUT
         BIPUSH 0x20
         OUT
+        LDC_W OBJREF
         ILOAD rAvg
-        OUT
+        INVOKEVIRTUAL printNum
         
         BIPUSH 0xA
         OUT 
@@ -405,8 +473,9 @@ done:   ILOAD cnt
         OUT
         BIPUSH 0x20
         OUT
+        LDC_W OBJREF
         ILOAD rCntMin
-        OUT
+        INVOKEVIRTUAL printNum
 
         BIPUSH 0x2C
         OUT
@@ -425,8 +494,10 @@ done:   ILOAD cnt
         OUT
         BIPUSH 0x20
         OUT
+        LDC_W OBJREF
         ILOAD rCntMax
-        OUT
+        INVOKEVIRTUAL printNum
+
         
         BIPUSH 0xA
         OUT 
@@ -435,3 +506,50 @@ done:   ILOAD cnt
 .end-method
 
 
+.method printNum(n)
+.var
+    q
+    oldn
+.end-var
+
+	ILOAD n         // oldn = n
+	ISTORE oldn
+    ILOAD n         // See if n == 0
+	IFEQ zero
+    BIPUSH 0x0      // Otherwise, we have a real number and need to divide to 
+    ISTORE q        // convert it to decimal	
+
+divide_loop:        // We do that by looping up to 9 times
+	ILOAD n         // End if n is less than 10
+	BIPUSH 0xA
+	ISUB
+	IFLT divide_done
+	IINC n -10      // Subtract ten from n, add one to the quotient
+	IINC q 1
+	GOTO divide_loop
+
+divide_done:        // Now, we have the first digit of the decimal number 
+	ILOAD q         // in q and the second is left in n
+	IFEQ q_is_zero  // if q is zero, skip printing the first digit
+	BIPUSH 0x30     // print the first digit
+	ILOAD q
+	IADD
+	OUT
+
+q_is_zero:	
+	ILOAD n         // Print the second digit
+	BIPUSH 0x30
+	IADD
+	OUT
+	GOTO number_done
+	
+zero:               // If we made it here, n == 0. So, instead of printing out
+	BIPUSH 0x4E     // '0' we print out 'No'
+	OUT
+	BIPUSH 0x6F
+	OUT
+
+number_done:
+
+	IRETURN
+.end-method

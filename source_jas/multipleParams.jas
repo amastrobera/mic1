@@ -1,0 +1,119 @@
+.constant
+    OBJREF 0xCAFE
+.end-constant
+
+.main
+
+.var
+    num
+    sum
+.end-var
+
+        BIPUSH 5
+        ISTORE num
+
+    //calc    
+        LDC_W OBJREF
+        ILOAD num
+        BIPUSH 3
+        BIPUSH 6
+        BIPUSH 4
+        BIPUSH 7
+        BIPUSH 2
+        INVOKEVIRTUAL sum
+        ISTORE sum
+
+    //print        
+        BIPUSH 0x53
+        OUT
+        BIPUSH 0x75
+        OUT
+        BIPUSH 0x6D
+        OUT
+        BIPUSH 0x3D
+        OUT
+        BIPUSH 0x20
+        OUT
+        
+        LDC_W OBJREF
+        ILOAD sum
+        INVOKEVIRTUAL printNum
+
+.end-main
+
+
+.method sum(n)
+
+.var
+    rSum
+    rem
+.end-var
+
+        BIPUSH 0
+        ISTORE rSum
+        
+        ILOAD n
+        ISTORE rem
+        
+loop:   ILOAD n
+        IFEQ done
+        IINC n -1
+        ILOAD rSum
+        IADD
+        ISTORE rSum
+        POP
+        GOTO loop
+
+done:   ILOAD rSum
+        IRETURN
+.end-method
+
+
+.method printNum(n)
+.var
+    q
+    oldn
+.end-var
+
+	ILOAD n         // oldn = n
+	ISTORE oldn
+    ILOAD n         // See if n == 0
+	IFEQ zero
+    BIPUSH 0x0      // Otherwise, we have a real number and need to divide to 
+    ISTORE q        // convert it to decimal	
+
+divide_loop:        // We do that by looping up to 9 times
+	ILOAD n         // End if n is less than 10
+	BIPUSH 0xA
+	ISUB
+	IFLT divide_done
+	IINC n -10      // Subtract ten from n, add one to the quotient
+	IINC q 1
+	GOTO divide_loop
+
+divide_done:        // Now, we have the first digit of the decimal number 
+	ILOAD q         // in q and the second is left in n
+	IFEQ q_is_zero  // if q is zero, skip printing the first digit
+	BIPUSH 0x30     // print the first digit
+	ILOAD q
+	IADD
+	OUT
+
+q_is_zero:	
+	ILOAD n         // Print the second digit
+	BIPUSH 0x30
+	IADD
+	OUT
+	GOTO number_done
+	
+zero:               // If we made it here, n == 0. So, instead of printing out
+	BIPUSH 0x4E     // '0' we print out 'No'
+	OUT
+	BIPUSH 0x6F
+	OUT
+
+number_done:
+
+	IRETURN
+.end-method
+

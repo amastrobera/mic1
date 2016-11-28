@@ -1,0 +1,53 @@
+//test invokevirtual
+
+.constant
+    OBJREF 0x00
+.end-constant
+
+.main
+
+.var
+        var1
+        var2
+.end-var
+
+        BIPUSH 0x41
+        ISTORE var1     //A
+        BIPUSH 0x42
+        ISTORE var2     //B
+
+
+        LDC_W OBJREF
+        ILOAD var1
+        ILOAD var2
+        INVOKEVIRTUAL print  //<A,B>
+
+        LDC_W OBJREF
+        ILOAD var2
+        ILOAD var1
+        INVOKEVIRTUAL print //<B,A>
+
+done:
+
+        HALT
+        
+.end-main
+
+
+
+.method print(var1,var2)
+        BIPUSH 0x3C
+        OUT
+        ILOAD var1
+        OUT
+        BIPUSH 0x2C
+        OUT
+        ILOAD var2
+        OUT
+        BIPUSH 0x3E
+        OUT
+        BIPUSH 0xA
+        OUT
+        IRETURN
+.end-method
+
