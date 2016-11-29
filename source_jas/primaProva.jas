@@ -27,14 +27,15 @@
     rCntMax
 .end-var
 
-init:       BIPUSH 91
+init:       BIPUSH 32
             ISTORE var1
-            BIPUSH 1
+            BIPUSH 12
             ISTORE var2
-            BIPUSH 1
+            BIPUSH 90
             ISTORE var3
-            BIPUSH 1
+            BIPUSH 12
             ISTORE var4
+            
             BIPUSH 0         //default value for all: null in ascii
             DUP
             DUP
@@ -320,25 +321,21 @@ done:   POP         //remove init value
     LDC_W OBJREF
     ILOAD e1
     INVOKEVIRTUAL printNum
-    OUT
     BIPUSH 0x2C
     OUT
     LDC_W OBJREF
     ILOAD e2
     INVOKEVIRTUAL printNum
-    OUT
     BIPUSH 0x2C
     OUT
     LDC_W OBJREF
     ILOAD e3
     INVOKEVIRTUAL printNum
-    OUT
     BIPUSH 0x2C
     OUT
     LDC_W OBJREF
     ILOAD e4
     INVOKEVIRTUAL printNum
-    OUT
     BIPUSH 0x7D
     OUT
 
