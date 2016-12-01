@@ -1,233 +1,217 @@
-//todo:
-//      make functions generic for any number of variables
-//          * printList
-//          * min
-//          * max
-//          * avg
-//          * count
-
 //Angelo Mastroberardino
 //cp: 10429624
 
 .constant
-    OBJREF 0xCAFE               //lots of it ...
+            OBJREF 0xCAFE               //lots of it ...
 .end-constant
 
 .main
 
 .var
-    var1
-    var2
-    var3
-    var4
-    rMin
-    rMax
-    rAvg
-    rCntMin
-    rCntMax
+            cur
+            num
+            rMin
+            rMax
+            rSum
+            rAvg
+            rCntMin
+            rCntMax
+            prev
 .end-var
 
-init:       BIPUSH 32
-            ISTORE var1
-            BIPUSH 12
-            ISTORE var2
-            BIPUSH 90
-            ISTORE var3
-            BIPUSH 12
-            ISTORE var4
+            LDC_W OBJREF    //end of loop
             
-            BIPUSH 0         //default value for all: null in ascii
-            DUP
+input:                      //insert the list here
+            BIPUSH 1
+            BIPUSH 2
+            BIPUSH 1
+            BIPUSH 1
+
+
+init:       BIPUSH 0        //default value: num=0 (to be update in the loop)
+            ISTORE num
+
+            LDC_W OBJREF
+            INVOKEVIRTUAL printListBegin
+            POP
+
+            DUP             //empty list: go to the end or store cur=first elem
+            LDC_W OBJREF
+            IF_ICMPEQ done
+            ISTORE cur
+            
+            ILOAD cur       //default value: calcs=first elem, counter=1
             DUP
             DUP
             DUP
             ISTORE rMin
             ISTORE rMax
+            ISTORE rSum
             ISTORE rAvg
+            BIPUSH 1
+            DUP
             ISTORE rCntMin
             ISTORE rCntMax
 
+            LDC_W OBJREF        //print the current element
+            ILOAD cur
+            ILOAD num
+            INVOKEVIRTUAL printListElem
+            POP
 
-list:       LDC_W OBJREF
-            ILOAD var1
-            ILOAD var2
-            ILOAD var3
-            ILOAD var4
-            INVOKEVIRTUAL printList
+            GOTO inc            //increment and begin the loop from elem 2
 
-calcMin:    LDC_W OBJREF
-            ILOAD var1
-            ILOAD var2
-            ILOAD var3
-            ILOAD var4
-            INVOKEVIRTUAL min
+loop:       DUP
+            LDC_W OBJREF
+            IF_ICMPEQ done
+            ISTORE cur
+
+            LDC_W OBJREF        //print the current element
+            ILOAD cur
+            ILOAD num
+            INVOKEVIRTUAL printListElem
+            POP
+            
+            ILOAD rMin          //update min and count(min)
+            ISTORE prev
+            
+            LDC_W OBJREF
+            ILOAD cur
+            ILOAD prev
+            INVOKEVIRTUAL calcMin
             ISTORE rMin
-
-calcMax:    LDC_W OBJREF
-            ILOAD var1
-            ILOAD var2
-            ILOAD var3
-            ILOAD var4
-            INVOKEVIRTUAL max
-            ISTORE rMax
-
+            
             LDC_W OBJREF
             ILOAD rMin
+            ILOAD prev
+            ILOAD rCntMin
+            INVOKEVIRTUAL updateCounterMin
+            ISTORE rCntMin
+
+            ILOAD rMax          //update max and count(max)
+            ISTORE prev
+            
+            LDC_W OBJREF
+            ILOAD cur
+            ILOAD prev
+            INVOKEVIRTUAL calcMax
+            ISTORE rMax
+            
+            LDC_W OBJREF
             ILOAD rMax
-            INVOKEVIRTUAL printMinMax
+            ILOAD prev
+            ILOAD rCntMax
+            INVOKEVIRTUAL updateCounterMax
+            ISTORE rCntMax
+
+            ILOAD cur           //update sum
+            ILOAD rSum
+            IADD
+            ISTORE rSum
+            
+inc:        IINC num 1          //update num elem counter
+            GOTO loop
 
 
 calcAvg:    LDC_W OBJREF
-            ILOAD var1
-            ILOAD var2
-            ILOAD var3
-            ILOAD var4
-            INVOKEVIRTUAL avg
+            ILOAD rSum
+            ILOAD num
+            INVOKEVIRTUAL divide
             ISTORE rAvg
-            
-            LDC_W OBJREF
-            ILOAD rAvg
-            INVOKEVIRTUAL printAvg
+            GOTO print
+
+done:       LDC_W OBJREF
+            INVOKEVIRTUAL printListEnd
+            POP
+            GOTO calcAvg
 
 
-cntMin:     LDC_W OBJREF
+print:      LDC_W OBJREF
             ILOAD rMin
-            ILOAD var1
-            ILOAD var2
-            ILOAD var3
-            ILOAD var4
-            INVOKEVIRTUAL count
-            ISTORE rCntMin
-
-cntMin:     LDC_W OBJREF
             ILOAD rMax
-            ILOAD var1
-            ILOAD var2
-            ILOAD var3
-            ILOAD var4
-            INVOKEVIRTUAL count
-            ISTORE rCntMax
-
-            LDC_W OBJREF
+            ILOAD rAvg
             ILOAD rCntMin
             ILOAD rCntMax
-            INVOKEVIRTUAL printCntMinMax
+            INVOKEVIRTUAL printResults
+            POP
 
-
-//print:      LDC_W OBJREF
-//            ILOAD rMin
-//            ILOAD rMax
-//            ILOAD rAvg
-//            ILOAD rCntMin
-//            ILOAD rCntMax
-//            INVOKEVIRTUAL printResults
-
-done:       HALT
+            HALT
 .end-main
 
 
 //calc functions
-.method min(e1,e2,e3,e4)
-.var
-        rVal
-.end-var
 
-start:  ILOAD e1
-        ISTORE rVal
-
-        LDC_W OBJREF        
-        ILOAD e4
-        ILOAD e3
-        ILOAD e2
-        ILOAD e1
-
-iter:   DUP
-        LDC_W OBJREF
-        IF_ICMPEQ ret       //end-condition
-        DUP
-        ILOAD rVal
+.method calcMin(cur,rMin)
+        ILOAD cur
+        ILOAD rMin
         ISUB
-        IFLT calc
-        POP                 //keep current min
-        GOTO iter
-calc:   ISTORE rVal         //new min
-        GOTO iter
+        IFLT update
+        ILOAD rMin
+        GOTO end
+        
+update: ILOAD cur
 
-ret:    POP                 //remove end-loop value
-        ILOAD rVal
+end:    IRETURN
+.end-method
+
+
+.method calcMax(cur,rMax)
+        ILOAD rMax
+        ILOAD cur
+        ISUB
+        IFLT update
+        ILOAD rMax
+        GOTO end
+        
+update: ILOAD cur
+
+end:    IRETURN
+.end-method
+
+
+.method updateCounterMin(cur,prev,counter)
+        ILOAD cur           //if elem == previous increate by 1
+        ILOAD prev
+        IF_ICMPEQ update
+        
+        LDC_W OBJREF
+        ILOAD cur           //else check if we have a new min or not
+        ILOAD prev
+        INVOKEVIRTUAL calcMin
+        ILOAD prev
+same:   IF_ICMPEQ end       //if the min is still the same do nothing
+
+new:    BIPUSH 1            //else, new min: assign 1 default value
+        ISTORE counter
+        GOTO end
+                
+update: IINC counter 1
+        
+end:    ILOAD counter
         IRETURN
 .end-method
 
 
-.method max(e1,e2,e3,e4)
-.var
-        rVal
-.end-var
-
-start:  ILOAD e1
-        ISTORE rVal
-
-        LDC_W OBJREF        
-        ILOAD e4
-        ILOAD e3
-        ILOAD e2
-        ILOAD e1
-
-iter:   DUP
+.method updateCounterMax(cur,prev,counter)
+        ILOAD cur           //if elem == previous increate by 1
+        ILOAD prev
+        IF_ICMPEQ update
+        
         LDC_W OBJREF
-        IF_ICMPEQ ret       //end-condition
-        DUP
-        ILOAD rVal
-        ISUB
-        IFLT calc
-        ISTORE rVal         //new max
-        GOTO iter
-calc:   POP                 //keep current max
-        GOTO iter
+        ILOAD cur           //else check if we have a new max or not
+        ILOAD prev
+        INVOKEVIRTUAL calcMax
+        ILOAD prev
+same:   IF_ICMPEQ end       //if the max is still the same do nothing
 
-ret:    POP                 //remove end-loop value
-        ILOAD rVal
+new:    BIPUSH 1            //else, new max: assign 1 default value
+        ISTORE counter
+        GOTO end
+                
+update: IINC counter 1
+        
+end:    ILOAD counter
         IRETURN
-.end-method
-
-
-.method avg(e1,e2,e3,e4)
-.var
-            sum
-            num
-            ret
-.end-var
-
-init:       BIPUSH 4
-            ISTORE num
-            BIPUSH 0
-            ISTORE sum
-            BIPUSH 0
-            ISTORE ret
-            
-            LDC_W OBJREF
-            ILOAD e4
-            ILOAD e3
-            ILOAD e2
-            ILOAD e1
-
-loop:       DUP
-            LDC_W OBJREF
-            IF_ICMPEQ endloop
-            ILOAD sum
-            IADD
-            ISTORE sum
-            GOTO loop
-endloop:    POP
-          
-            LDC_W OBJREF
-            ILOAD sum
-            ILOAD num
-            INVOKEVIRTUAL divide
-            ISTORE ret
-
-            ILOAD ret
-            IRETURN
 .end-method
 
 
@@ -255,7 +239,7 @@ loop:       ILOAD remain
             IINC counter 1
             GOTO loop
 
-divzero:    LDC_W OBJREF
+divzero:    LDC_W OBJREF    //if division by zero return objref 
             ISTORE counter
 
 done:       ILOAD counter
@@ -264,40 +248,10 @@ done:       ILOAD counter
 
 
 
-.method count(rVal,e1,e2,e3,e4)
-.var 
-    cnt
-.end-var
-
-        BIPUSH 0
-        ISTORE cnt
-
-        LDC_W OBJREF //init value
-        ILOAD e1
-        ILOAD e2
-        ILOAD e3
-        ILOAD e4
-
-loop:   DUP
-        LDC_W OBJREF        //end-of-loop condition
-        IF_ICMPEQ done
-        ILOAD rVal          //found value to count
-        IF_ICMPEQ add
-        GOTO loop
-
-add:    IINC cnt 1
-        GOTO loop
-
-done:   POP         //remove init value
-        ILOAD cnt
-        IRETURN
-.end-method
-
 
 //printing fuctions
 
-.method printList(e1,e2,e3,e4)
-//elenco: {1,2,3,4} ->
+.method printListBegin()  //elenco: {
     BIPUSH 0x65
     OUT
     BIPUSH 0x6C
@@ -318,24 +272,25 @@ done:   POP         //remove init value
 
     BIPUSH 0x7B
     OUT
-    LDC_W OBJREF
-    ILOAD e1
-    INVOKEVIRTUAL printNum
-    BIPUSH 0x2C
-    OUT
-    LDC_W OBJREF
-    ILOAD e2
-    INVOKEVIRTUAL printNum
-    BIPUSH 0x2C
-    OUT
-    LDC_W OBJREF
-    ILOAD e3
-    INVOKEVIRTUAL printNum
-    BIPUSH 0x2C
-    OUT
-    LDC_W OBJREF
-    ILOAD e4
-    INVOKEVIRTUAL printNum
+
+    IRETURN
+.end-method
+
+.method printListElem(cur,num)  //,elem        
+        BIPUSH 0
+        ILOAD num
+        IF_ICMPEQ elem
+        BIPUSH 0x2C         //print "," before new elem, unless first
+        OUT
+
+elem:   LDC_W OBJREF
+        ILOAD cur
+        INVOKEVIRTUAL printNum
+
+        IRETURN
+.end-method
+
+.method printListEnd() //} -> cr
     BIPUSH 0x7D
     OUT
 
@@ -352,8 +307,8 @@ done:   POP         //remove init value
     IRETURN
 .end-method
 
-.method printResults(rMin,rMax,rAvg,rCntMin,rCntMax)
 
+.method printResults(rMin,rMax,rAvg,rCntMin,rCntMax)
     LDC_W OBJREF
     ILOAD rMin
     ILOAD rMax
