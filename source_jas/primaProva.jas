@@ -23,10 +23,16 @@
             
 input:                      //insert the list here
             BIPUSH 1
-            BIPUSH 2
             BIPUSH 1
             BIPUSH 1
-
+            BIPUSH 1
+            BIPUSH 1
+            BIPUSH 1
+            BIPUSH 1
+            BIPUSH 1
+            BIPUSH 1
+            BIPUSH 91
+            
 
 init:       BIPUSH 0        //default value: num=0 (to be update in the loop)
             ISTORE num
@@ -73,35 +79,38 @@ loop:       DUP
             POP
             
             ILOAD rMin          //update min and count(min)
-            ISTORE prev
-            
+            ISTORE prev           
+
             LDC_W OBJREF
             ILOAD cur
             ILOAD prev
             INVOKEVIRTUAL calcMin
             ISTORE rMin
-            
+
             LDC_W OBJREF
+            ILOAD cur
             ILOAD rMin
             ILOAD prev
             ILOAD rCntMin
-            INVOKEVIRTUAL updateCounterMin
+            INVOKEVIRTUAL updateCounterValue
             ISTORE rCntMin
+
 
             ILOAD rMax          //update max and count(max)
             ISTORE prev
-            
+
             LDC_W OBJREF
             ILOAD cur
             ILOAD prev
             INVOKEVIRTUAL calcMax
             ISTORE rMax
-            
+
             LDC_W OBJREF
+            ILOAD cur
             ILOAD rMax
             ILOAD prev
             ILOAD rCntMax
-            INVOKEVIRTUAL updateCounterMax
+            INVOKEVIRTUAL updateCounterValue
             ISTORE rCntMax
 
             ILOAD cur           //update sum
@@ -169,42 +178,18 @@ end:    IRETURN
 .end-method
 
 
-.method updateCounterMin(cur,prev,counter)
-        ILOAD cur           //if elem == previous increate by 1
-        ILOAD prev
+.method updateCounterValue(cur,newVal,prevVal,counter)
+        ILOAD cur           //if cur == previous tgt increate by 1
+        ILOAD prevVal
         IF_ICMPEQ update
         
-        LDC_W OBJREF
-        ILOAD cur           //else check if we have a new min or not
-        ILOAD prev
-        INVOKEVIRTUAL calcMin
-        ILOAD prev
-same:   IF_ICMPEQ end       //if the min is still the same do nothing
-
-new:    BIPUSH 1            //else, new min: assign 1 default value
-        ISTORE counter
-        GOTO end
-                
-update: IINC counter 1
+        ILOAD cur           //else, check if we have a new tgt or not
+        ILOAD newVal
+        IF_ICMPEQ new
         
-end:    ILOAD counter
-        IRETURN
-.end-method
-
-
-.method updateCounterMax(cur,prev,counter)
-        ILOAD cur           //if elem == previous increate by 1
-        ILOAD prev
-        IF_ICMPEQ update
+same:   GOTO end            //if not, do nothing
         
-        LDC_W OBJREF
-        ILOAD cur           //else check if we have a new max or not
-        ILOAD prev
-        INVOKEVIRTUAL calcMax
-        ILOAD prev
-same:   IF_ICMPEQ end       //if the max is still the same do nothing
-
-new:    BIPUSH 1            //else, new max: assign 1 default value
+new:    BIPUSH 1            //new max: reset counter to 1
         ISTORE counter
         GOTO end
                 
