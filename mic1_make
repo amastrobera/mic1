@@ -8,12 +8,12 @@ function fHelp() {
 }
 
 function fLaunch() {
-	echo "  >> assemble the IJVM program for $2 ..."
-	java ijvmasm "source_jas/$2.jas" "source_ijvm/$2.ijvm"
 	echo "  >> assemble the Micro program $1 ... "
-	java mic1asm "$1.mal" "$1.mic1"
+	java -cp classes.zip mic1asm "source_mal/$1.mal" "source_mic1/$1.mic1"
+	echo "  >> assemble the IJVM program for $2 ..."
+	java -cp classes.zip ijvmasm "source_jas/$2.jas" "source_ijvm/$2.ijvm"
 	echo "  >> running the Simulator $1 on $2 ... "
-	java mic1sim "$1.mic1" "source_ijvm/$2.ijvm" & 
+	java -cp classes.zip  mic1sim "source_mic1/$1.mic1" "source_ijvm/$2.ijvm" & 
 }
 
 #main
