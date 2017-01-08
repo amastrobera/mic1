@@ -2,25 +2,24 @@
 
 function fHelp() {
 	echo "  >> help"
-	echo "  >> $0 mal_file jas_file"
-	echo "  >>    mal_file :	adaptation of mic1ijvm.mal file (no extension)"
+	echo "  >> $0 jas_file"
 	echo "  >>    jas_file :	ivjm language file with your code (no extention)" 
 }
 
 function fLaunch() {
-	echo "  >> assemble the Micro program $1 ... "
-	java -cp classes.zip mic1asm "source_mal/$1.mal" "source_mic1/$1.mic1"
-	echo "  >> assemble the IJVM program for $2 ..."
-	java -cp classes.zip ijvmasm "source_jas/$2.jas" "source_ijvm/$2.ijvm"
-	echo "  >> running the Simulator $1 on $2 ... "
-	java -cp classes.zip  mic1sim "source_mic1/$1.mic1" "source_ijvm/$2.ijvm" & 
+	echo "  >> assemble the Micro program mic1ivjm ... "
+	java -cp classes.zip mic1asm mic1ijvm.mal mic1ijvm.mic1
+	echo "  >> assemble the IJVM program for $1 ..."
+	java -cp classes.zip ijvmasm "source_jas/$1.jas" "source_ijvm/$1.ijvm"
+	echo "  >> running the Simulator mic1ijvm on $1 ... "
+	java -cp classes.zip  mic1sim mic1ijvm.mic1 "source_ijvm/$1.ijvm" & 
 }
 
 #main
 echo "==== build and run MIC-1 simulation ===="
-if [ $# -eq 2 ]; then
+if [ $# -eq 1 ]; then
 	fLaunch $@
 else
-	fHelp
+	fHelp $0
 fi
 

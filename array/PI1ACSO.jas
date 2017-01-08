@@ -1,0 +1,797 @@
+//Considerazioni:
+//Divisione: gestione negativi potrebbe stare nella stampa (meno inversioni e controlli) ma non posso per via della media
+//Divione potrei usare un solo metodo che ritorna il quoziente ed il resto (Variabili globali/stack/array) Purtroppo non ho trovato come funzionano
+//La stampa dello stack potrebbe di persè essere una funzione ma non ho trovato nella documentazione come fare a leggere infinite variabili o meglio come leggere lo stack dei parametri che mi vengono passati
+//Per cercare di ottimizzare il codice ho tenuto conto del numero di operazioni di cui è composta un operazione (numero che ho trovto in questo documento http://bias.csr.unibo.it/maltoni/arc/Dispense/Disp_MicroArchitettura.pdf)
+//Ho inoltre considerato l'accesso alle varibili più lento rispetto alle operazioni sullo stack (non avevo il costo della IINC) e ho quindi considerato più veloce ciclare su di una varibile presente sullo stack ripsetto ad una salvata in una variabile (memoria)
+//Il testo chiedeva di caricare lo stack con delle BIPUSH ho (per facilità di test e debug) inserito un metodo che legge da input
+//Ho messo le stampe in dei metodi (anche se la chiamata mi rallenta l'esecuzione) perchè essendoci tante BIPUSH e OUT il codice diventava faticosamente leggeibile.
+
+.constant 
+OBJREF 10
+.end-constant
+
+.main
+    .var
+		n //numero di numeri da processare
+		s //varibile somma
+		vmax //massimo valore
+		vmin //minimo valore
+		nmin //numero valori = min
+		nmax //numero valori = max
+    .end-var
+	
+	//Visto che non mi era chiaro come inserire i numeri se solo con una BIPUSH o attraverso console scrivendoli tra parentesi graffe (come esempi del testo)
+	// e che il secondo metodo mi veniva comodo per effettuare i test ho implementato entrambi i metodi. 
+	//Il codice lo ho spostato in un'altra parte del codice main (Zona irraggiungibile se non attraverso un salto) almeno per switchare basta commentare o scommentare una riga (non ho usato procedure perchè queste mi fanno tornare solo un valore mentre io avrei avuto bisogno di tornare uno stack o comunque più di un valore)
+	GOTO INPUT_UTENTE //input tramite console
+	//GOTO INPUT_BIPUSH //input tramite bipush
+	end_input:
+
+//Verifico il numero di elementi da processare se sono = 0	o negativi non faccio nulla
+	DUP
+	IFEQ fine
+	DUP
+	IFLT fine
+//Inizializzo variabili con il primo elemento da processare
+	BIPUSH 1
+	DUP
+	ISTORE nmin 
+	ISTORE nmax
+    SWAP //Porto il contatore al secondo posto ed il numero al primo
+	DUP
+	DUP
+	ISTORE vmax //Il numero mi diventa il massimo
+	ISTORE vmin //Il numero mi diventa il minimo
+	ISTORE s //Il numero equivale alla somma parziale
+	BIPUSH 1
+	ISUB //Decremento il puntatore
+	//Ho deciso di calcolare tutto (massimo,minimo,numero massimi e numero minimi in un unico ciclo perchè così facendo il tutto è molto più veloce ed eff.)
+processa:	
+    DUP //Sto duplicando la variabile del contatore in quanto una me la mangia l'ifeq
+    IFEQ endprocessa
+	BIPUSH 1 //Decremento il contatore se avessi usato la varibile sarebbe stato IINC i -1
+	ISUB
+	SWAP //Sposto la variabile del contatore sotto al numero almeno posso usare senza problemi il mio numero avendo "salvo" il contatore
+	calcolo_max:
+	    DUP //Duplico il numero la funzione max lo mangia
+	    ILOAD vmax //Carico il massimo attuale 
+	    SWAP //Inverto per avere la sottrazione max - n quindi se il numero sarà negativo n sarà il nuovo max altrimenti se sarà uguale a 0 dovro incrementare il numero di max
+		ISUB //Sottraggo
+	    DUP //Uno lo consuma il primo ed uno il secondo 
+	    IFLT azzera_max //Ho preferito portare in fondo al main i due pezzettini di codice che si occupano di azzerare ed incrementare per questione di facilità di lettura (non ho implementato una procedura per fare questo perchè sarebbe stato peggiore in termini di numero di operazioni da eseguire) entrambi saltano poi all'end_calcolo_max
+        GOTO end_azzera_max
+			azzera_max: //Ho trovato un nuovo max!
+            POP // Cancello il valore in più che avevo messo sullo stack prima
+            DUP //Duplico il valore (Uno lo mangio)
+            ISTORE vmax//Aggiorno il mio massimo
+            BIPUSH 0x01
+            ISTORE nmax 
+            GOTO end_calcolo_max
+		end_azzera_max:
+        IFEQ aggiorna_contatore_max
+        GOTO end_calcolo_max
+		  aggiorna_contatore_max: //Aggiorna incrementandolo il contatore del max 
+          IINC nmax 1
+	 	end_calcolo_max:	
+	
+	calcolo_min:
+	    DUP //Duplico il numero la funzione min lo mangia
+	    ILOAD vmin //Carico il massimo attuale 
+		ISUB //Sottraggo n - min quindi se sarà negativo n sarà il nuovo min mentre se saranno =0 devo incrementare nmin
+	    DUP //Uno lo consuma il primo ed uno il secondo 
+	    IFLT azzera_min //Ho preferito portare in fondo al main i due pezzettini di codice che si occupano di azzerare ed incrementare per questione di facilità di lettura (non ho implementato una procedura per fare questo perchè sarebbe stato peggiore in termini di numero di operazioni da eseguire) entrambi saltano poi all'end_calcolo_min
+        GOTO end_azzera_min
+			 azzera_min: //Ho trovato un nuovo min
+             POP // Cancello il valore in più che avevo messo sullo stack prima
+             DUP //Duplico il valore (Uno lo mangio)
+             ISTORE vmin//Aggiorno il mio massimo
+             BIPUSH 0x01
+             ISTORE nmin
+             GOTO end_calcolo_min
+	     end_azzera_min:			 
+        IFEQ aggiorna_contatore_min
+		GOTO end_calcolo_min
+		aggiorna_contatore_min: //Aggiorna incrementandolo il contatore del min
+        IINC nmin 1
+    end_calcolo_min:	
+	
+	calcolo_somma: 
+	   ILOAD s
+	   IADD	   
+	   ISTORE s
+	end_calcolo_somma:
+	GOTO PROCESSA
+endprocessa:
+   POP //Elimino la variabile del contatore che era l'unica rimasta sullo stack (Potrei evitare questa operazione ma la faccio per correttezza in modo da avere uno stack pulito)
+   
+   //Calcolo la media (divido la somma per il numero di elementi)
+   LDC_W OBJREF
+   ILOAD s
+   ILOAD n   
+   INVOKEVIRTUAL div
+   //Lascio il risultato della media sullo stack tanto lo devo solo stampare evito così una ILOAD ISTORE (sostituendola con una più veloce SWAP)
+
+   //Stampa I risultati
+   LDC_W OBJREF
+   SWAP //Scambio l'OBJREF con il valore della media
+   ILOAD vmin
+   ILOAD vmax
+   ILOAD nmin
+   ILOAD nmax
+   INVOKEVIRTUAL printResults
+fine: //Termino l'esecuzione (è l'unico punto di uscita)
+     POP  
+     HALT
+	
+//PEZZETTINI DI CODICE MESSI QUI PER FACILITARE LA LEGGIBILITA' DOVE VENGONO USATI
+
+INPUT_UTENTE:
+//Uso la variabile s come flag per i numeri negativi
+//Stampa la testata
+    LDC_W OBJREF 
+    INVOKEVIRTUAL printHeader
+	POP //Elimino il valore inutile tornato dalla funzione
+	//Predispongo le variabili
+	BIPUSH 0x0
+	DUP
+	DUP
+	DUP //Per avere sullo stack il primo valore
+	ISTORE n //azzero il numero di numeri letti
+    ISTORE s //distattivo il flag del numero negativo (Il primo numero non è negativo)
+	leggi_num:
+	ILOAD s
+	IFEQ continua_leggi //Se non devo invertire il numero letto (Non è negativo) continuo la lettura altrimenti inverto
+		SWAP //Scambio l'ultimo carattere letto con il numero
+	    LDC_W OBJREF
+		SWAP //Scambio l'OBJREF con il numero
+		INVOKEVIRTUAL inverti
+		BIPUSH 0x0
+	    ISTORE s//ripristino il flag a 0
+		SWAP
+	continua_leggi:
+	POP //Brucio l'ultimo carattere letto ',' oppuro lo 0 che ho messo prima
+	BIPUSH 0x0 //Il nuovo numero
+	DUP //Per il POP che ho messo sotto
+	IINC n 1 //Incremento il numero di numeri letti
+	leggi_char:
+	   POP //Per le mancate letture (cancello il carattere letto)
+	   IN //Leggo il carattere
+	   DUP //Duplico per non pederlo con l'if
+	   IFEQ leggi_char //Se è una lettura valida e non ho il buffer vuoto
+	   DUP //Stampo quanto letto a prescindere dalla validità
+	   OUT 
+       DUP //L'IF_ICMPEQ me la brucerebbe
+	   BIPUSH 45 // -
+	   IF_ICMPEQ gestisci_meno //Verifico che sia un meno e nel caso lo gestisco (mi segno in s che lo dovro invertire)
+	   GOTO end_gestisci_meno
+	   gestisci_meno:
+	   BIPUSH 1
+	   ISTORE s
+	   end_gestisci_meno: //Qui metto un inverti
+	   DUP //L'IF_ICMPEQ me la brucerebbe
+	   BIPUSH 44 //,
+	   IF_ICMPEQ leggi_num //se è ',' leggo il prossimo numero
+       DUP 
+	   BIPUSH 125 //}
+	   IF_ICMPEQ end_lettura //Se ho '}' devo terminare la lettura
+	   BIPUSH 48
+	   ISUB
+	   DUP //Altrimenti l'IFLT me lo brucia
+	   IFLT leggi_char //Carattere non valido perchè < '0'
+	   DUP //Altrimenti l'IFLT me lo brucia
+	   BIPUSH 9
+	   SWAP
+	   ISUB
+	   IFLT leggi_char //Carattere non valido perchè >'9'
+	   SWAP //Inverto l'attuale numero letto con l'ultimo valore letto
+	   LDC_W OBJREF 
+	   SWAP //Inverto OBJREF e numero attualmente letto per moltiplicare il numero attualmente letto per 10
+	   BIPUSH 10
+	   INVOKEVIRTUAL prodotto //Moltiplico il numero letto fino ad ora per 10
+	   IADD //SOmmo al numero letto fino ad ora la nuova cifrà dell'unità
+	   DUP //Duplico il risultato per il POP del leggi char
+	   GOTO leggi_char
+    end_lettura:
+    POP //Elimino il carattere }
+    ILOAD s //Verifico se l'ultimo numero letto era da invertire ed in tal caso lo inverto
+	IFEQ continua_end
+	    LDC_W OBJREF
+		SWAP
+		INVOKEVIRTUAL inverti
+    continua_end:
+	ILOAD n //Carico sullo stack il numero di elementi da processare
+    LDC_W OBJREF 
+    INVOKEVIRTUAL printHeaderTail
+	POP //Elimino il valore inutile tornato dalla funzione	 
+	GOTO end_input 
+	
+INPUT_BIPUSH:
+//Scrivo i valori sullo stack
+	BIPUSH -123
+	BIPUSH 123
+	BIPUSH -22
+	BIPUSH -1
+	BIPUSH -1
+	BIPUSH -1
+    BIPUSH -6
+	
+//Scrivo sullo stack il numero di elementi (è necessario per sapere quanti processarne)
+BIPUSH 7
+DUP //Duplico la varibile in quanto una mi servirà per calcolare la media ed una come contatore
+ISTORE n
+GOTO end_input
+.end-main
+
+.method printNumber(n)
+    BIPUSH -1 //segnaposto per la fine della procedura di stampa
+    ILOAD n
+	scomponi: //Ciclo che scompone il numero per stamparlo
+	DUP //Più rapido che fare due ILOAD
+	LDC_W OBJREF
+	SWAP //Più eff. altrimnti mi dovrei salvare il risultato in una varibile locale e poi caricarlo
+	BIPUSH 10
+	INVOKEVIRTUAL mod //Lo ho costruita in modo che il resto sia senza segno
+	BIPUSH 48 //Aggiungo il codice ascii dello zero così posso stampare
+	IADD
+	SWAP //Scambio nello stack il carattere da stampare ed il numero almeno posso effettuare la divisione 
+    LDC_W OBJREF
+	SWAP //Più eff. altrimnti mi dovrei salvare il risultato in una varibile locale e poi caricarlo
+	BIPUSH 10
+	INVOKEVIRTUAL div //Divido per 10
+	DUP //Uno me lo brucia  l'IFEQ
+	IFEQ lancia_stampa
+	GOTO scomponi
+lancia_stampa:
+    POP //cancello quello che mi è rimasto sullo stack per via del DUP
+	//Verifico se n è negativo in tal caso faccio stampare un -
+	ILOAD n
+	IFLT stampa_meno
+    GOTO stampa
+stampa_meno:
+    BIPUSH 45
+	OUT //Lo stampo subito (Tanto la stampa parte subito dopo) mi risparmio un iterazione del ciclo sotto
+stampa:
+    //Verifico se ho cose da stampare (mi fermo quando trovo il -1)
+    DUP //l'if mi cancella un elemento
+	IFLT ritorno
+	OUT //Stampo il valore
+	GOTO stampa
+ritorno:
+  //Non serve che aggiunga nulla allo stack perchè tanto contiene già il -1 del delimitatore della stampa
+  IRETURN
+.end-method
+
+.method max(a, b) //La ho implementata qui ma non la chiamo perchè è più il "costo" in operazioni che il guadgno di avere una sottporcedura (Il codice non risulta semplificato anzi....)
+    iload a //Carico i due valori
+    iload b
+    isub //Sottraggo (se è negativo a > b, se è 0 sono uguali a=b è quindi indifferente che io torni a o b)
+    IFLT else_max
+    iload a   // Carico e ritorno. Non tengo una unica istruzione di ritorno perchè sennò dovrei saltare e sarei più lento
+    ireturn
+else_max:
+    iload b
+	ireturn
+.end-method
+
+.method min(a, b) //La ho implementata qui ma non la chiamo perchè è più il "costo" in operazioni che il guadgno di avere una sottporcedura (Il codice non risulta semplificato anzi....)
+    iload a
+    iload b
+    isub
+    IFLT else_min
+    iload b   // Carico e ritorno. Non tengo una unica istruzione di ritorno perchè sennò dovrei saltare e sarei più lento
+    ireturn
+else_min:
+    iload a
+	ireturn
+.end-method
+
+.method div(a,b) //Divisione intera
+.var
+   q //quoziente della divisione
+   negativo //flag che mi dice se il numero è negativo o meno (e se quindi devo invertire il risultato)
+.end-var
+
+ 	//Predispongo le variabili
+		BIPUSH 0x0
+		ISTORE q
+		BIPUSH -1
+		ISTORE negativo
+		ILOAD a
+	// Check numeri negativi
+    DUP //IFLT lo consuma quindi lo duplico per non perderlo
+	IFLT negativo //Se il numero è negativo mi segno che dovrò reinvertire il risultato ed inverto il numero stesso
+	GOTO dividi
+	negativo:
+	LDC_W OBJREF
+	SWAP //Più eff. che fare POP LDC_W ILOAD a
+	INVOKEVIRTUAL inverti
+	IINC negativo 1
+	dividi:
+    	DUP //IFLT lo consuma quindi lo duplico per non perderlo
+		ILOAD b 
+		ISUB //Sottraggo
+		DUP //Duplico perchè IFLT lo consuma
+		IFLT gestisci_resto //Esci se ho resto 
+		IINC q 1    //Aumento il numero di volte in cui 10 sta nella varibile
+		DUP
+		IFEQ gestisci_ris // Esci divisione esatta
+		GOTO dividi
+	gestisci_resto:
+	    // ILOAD b
+		// IADD
+		//Non le faccio perchè tanto non ho modo di ritornare il resto
+	gestisci_ris:
+	    POP //Lascio pulito lo stack (dovrei anche poterlo evitare per maggiore velocità)
+	    ILOAD q
+	ILOAD negativo
+    IFLT ritorno //Se era negativo devo invertire	
+	LDC_W OBJREF
+	SWAP //Più eff. che fare POP LDC_W ILOAD a
+	INVOKEVIRTUAL inverti
+    ritorno:	
+	IRETURN
+.end-method
+    
+.method mod(a,b) //Ritorna il modulo del resto lo faccio perchè in questo partiolare esercizio è inutile che io inverta il numero per poi reinvertirlo ancora
+.var
+   negativo 
+.end-var
+   BIPUSH -1
+   ISTORE negativo
+   ILOAD a
+	// Check numeri negativi
+    DUP //IFLT lo consuma quindi lo duplico per non perderlo
+	IFLT negativo 
+	GOTO dividi
+	negativo:
+	LDC_W OBJREF
+	SWAP //Più eff. che fare POP LDC_W ILOAD a
+	INVOKEVIRTUAL inverti
+	IINC negativo 1
+	dividi:
+    	DUP //IFLT lo consuma quindi lo duplico per non perderlo
+		ILOAD b 
+		ISUB //Sottraggo
+		DUP //Duplico perchè IFLT lo consuma
+		IFLT gestisci_resto //Esci se ho resto 
+		DUP
+		IFEQ gestisci_ris // Esci divisione esatta
+		GOTO dividi
+	gestisci_resto:
+	    ILOAD b
+		IADD
+		//Lo stack contiene ora il resto
+	gestisci_ris:
+	
+	//ILOAD negativo
+    //IFLT ritorno //Se era negativo devo invertire	
+	//LDC_W OBJREF
+	//SWAP //Più eff. che fare POP LDC_W ILOAD a
+	//INVOKEVIRTUAL inverti
+    ritorno:
+		IRETURN
+.end-method
+	
+.method inverti(a)
+   //Faccio Tutte queste istruzioni perchè non ho trovato quella del not di una variabile altrimenti bastava not +1 (ed era più sicuro ed elegante di questo)
+   BIPUSH 0x0
+   ILOAD a
+   ISUB
+   IRETURN   
+.end-method	
+
+.method prodotto(a,b) //non funziona per numeri negativi ma non mi serve in questo caso (appesantirei solo il calcolo)
+.var
+  i
+.end-var
+   ILOAD b
+   ILOAD a
+   DUP
+   ISTORE i
+   IFEQ uscitanulla
+   somma:
+   IINC i -1
+   ILOAD i   
+   IFEQ uscita
+   ILOAD b
+   IADD
+   GOTO somma   
+   uscita:
+   IRETURN   
+   uscitanulla:
+   POP //Per correttezza
+   BIPUSH 0x0
+   IRETURN
+.end-method	
+
+.method printHeader()
+BIPUSH 10 
+BIPUSH 13
+//Stampa 'PI1 ACSO       Matteo Corti 849337'
+BIPUSH 55 //'7'
+BIPUSH 51 //'3'
+BIPUSH 51 //'3'
+BIPUSH 57 //'9'
+BIPUSH 52 //'4'
+BIPUSH 56 //'8'
+BIPUSH 32 //' '
+BIPUSH 105 //'i'
+BIPUSH 116 //'t'
+BIPUSH 114 //'r'
+BIPUSH 111 //'o'
+BIPUSH 67 //'C'
+BIPUSH 32 //' '
+BIPUSH 111 //'o'
+BIPUSH 101 //'e'
+BIPUSH 116 //'t'
+BIPUSH 116 //'t'
+BIPUSH 97 //'a'
+BIPUSH 77 //'M'
+BIPUSH 32 //' '
+BIPUSH 32 //' '
+BIPUSH 32 //' '
+BIPUSH 32 //' '
+BIPUSH 32 //' '
+BIPUSH 32 //' '
+BIPUSH 32 //' '
+BIPUSH 79 //'O'
+BIPUSH 83 //'S'
+BIPUSH 67 //'C'
+BIPUSH 65 //'A'
+BIPUSH 32 //' '
+BIPUSH 49 //'1'
+BIPUSH 73 //'I'
+BIPUSH 80 //'P'
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+//Stampa 'Inserire i numeri separati da ',' digitare '}' per terminare l'inserimento '
+BIPUSH 10 
+BIPUSH 13
+BIPUSH 111 //'o'
+BIPUSH 116 //'t'
+BIPUSH 110 //'n'
+BIPUSH 101 //'e'
+BIPUSH 109 //'m'
+BIPUSH 105 //'i'
+BIPUSH 114 //'r'
+BIPUSH 101 //'e'
+BIPUSH 115 //'s'
+BIPUSH 110 //'n'
+BIPUSH 105 //'i'
+BIPUSH 39 //'''
+BIPUSH 108 //'l'
+BIPUSH 32 //' '
+BIPUSH 101 //'e'
+BIPUSH 114 //'r'
+BIPUSH 97 //'a'
+BIPUSH 110 //'n'
+BIPUSH 105 //'i'
+BIPUSH 109 //'m'
+BIPUSH 114 //'r'
+BIPUSH 101 //'e'
+BIPUSH 116 //'t'
+BIPUSH 32 //' '
+BIPUSH 114 //'r'
+BIPUSH 101 //'e'
+BIPUSH 112 //'p'
+BIPUSH 32 //' '
+BIPUSH 39 //'''
+BIPUSH 125 //'}'
+BIPUSH 39 //'''
+BIPUSH 32 //' '
+BIPUSH 101 //'e'
+BIPUSH 114 //'r'
+BIPUSH 97 //'a'
+BIPUSH 116 //'t'
+BIPUSH 105 //'i'
+BIPUSH 103 //'g'
+BIPUSH 105 //'i'
+BIPUSH 100 //'d'
+BIPUSH 32 //' '
+BIPUSH 39 //'''
+BIPUSH 44 //','
+BIPUSH 39 //'''
+BIPUSH 32 //' '
+BIPUSH 97 //'a'
+BIPUSH 100 //'d'
+BIPUSH 32 //' '
+BIPUSH 105 //'i'
+BIPUSH 116 //'t'
+BIPUSH 97 //'a'
+BIPUSH 114 //'r'
+BIPUSH 97 //'a'
+BIPUSH 112 //'p'
+BIPUSH 101 //'e'
+BIPUSH 115 //'s'
+BIPUSH 32 //' '
+BIPUSH 105 //'i'
+BIPUSH 114 //'r'
+BIPUSH 101 //'e'
+BIPUSH 109 //'m'
+BIPUSH 117 //'u'
+BIPUSH 110 //'n'
+BIPUSH 32 //' '
+BIPUSH 105 //'i'
+BIPUSH 32 //' '
+BIPUSH 101 //'e'
+BIPUSH 114 //'r'
+BIPUSH 105 //'i'
+BIPUSH 114 //'r'
+BIPUSH 101 //'e'
+BIPUSH 115 //'s'
+BIPUSH 110 //'n'
+BIPUSH 73 //'I'
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+//Stampa elenco: {
+BIPUSH 123
+BIPUSH 32
+BIPUSH 58
+BIPUSH 111
+BIPUSH 99
+BIPUSH 110
+BIPUSH 101
+BIPUSH 108
+BIPUSH 101
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+OUT
+BIPUSH 0x0
+IRETURN
+.end-method
+
+
+.method printHeaderTail()
+//Nuova linea
+BIPUSH 13	//carriage return
+BIPUSH 10	//new line
+//Stampa ->
+BIPUSH 62
+BIPUSH 45
+BIPUSH 32
+OUT
+OUT
+OUT	
+OUT
+OUT
+BIPUSH 0x0
+IRETURN
+.end-method
+
+.method printResults(media,vmin,vmax,nmin,nmax)
+
+   //Stampa A) MIN: 
+    BIPUSH 32
+	BIPUSH 58
+	BIPUSH 78
+    BIPUSH 73
+	BIPUSH 77
+	BIPUSH 32
+	BIPUSH 41
+    BIPUSH 65
+	//Potrei Usare il ciclo come faccio con la stampa numero ma dato che conosco già il numero degli elementi da stampare scrivo direttamente gli out almeno sono più veloce (evito di fare if e salti)
+    OUT
+    OUT 
+    OUT
+	OUT
+	OUT
+	OUT
+	OUT
+	OUT
+    LDC_W OBJREF
+	ILOAD vmin 
+	INVOKEVIRTUAL printNumber
+	POP //Cancello il valore inutile ritornato dalla funzione
+	//Stampa , MAX:
+	BIPUSH 32
+	BIPUSH 58
+	BIPUSH 88
+	BIPUSH 65
+	BIPUSH 77
+	BIPUSH 32
+	BIPUSH 44 
+    OUT 
+	OUT
+	OUT
+	OUT
+	OUT
+	OUT
+    OUT
+    LDC_W OBJREF
+	ILOAD vmax
+	INVOKEVIRTUAL printNumber
+	POP//Elimino Il valore inutile ritornato dalla funzione
+
+
+	//Stampa B) AVG: 
+    BIPUSH 32
+	BIPUSH 58
+	BIPUSH 71
+	BIPUSH 86
+	BIPUSH 65
+	BIPUSH 32
+	BIPUSH 41
+	BIPUSH 66
+	//Nuova linea
+	BIPUSH 13	//carriage return
+	BIPUSH 10	//new line
+	OUT
+	OUT
+	OUT
+	OUT
+	OUT
+	OUT
+	OUT
+	OUT
+	OUT
+	OUT
+    LDC_W OBJREF
+    ILOAD media
+	INVOKEVIRTUAL printNumber
+	POP//Elimino Il valore inutile ritornato dalla funzione
+
+    //Stampa C) NMIN: 
+    BIPUSH 32
+	BIPUSH 58
+	BIPUSH 78
+    BIPUSH 73
+	BIPUSH 77
+	BIPUSH 78
+	BIPUSH 32
+	BIPUSH 41
+    BIPUSH 67
+	//Nuova linea
+	BIPUSH 13	//carriage return
+	BIPUSH 10	//new line
+	OUT
+	OUT
+	OUT
+    OUT
+    OUT 
+    OUT
+	OUT
+	OUT
+	OUT
+	OUT
+	OUT
+    LDC_W OBJREF
+	ILOAD nmin 
+	INVOKEVIRTUAL printNumber
+	POP //Cancello il valore inutile ritornato dalla funzione
+	//Stampa , NMAX:
+	BIPUSH 32
+	BIPUSH 58
+	BIPUSH 88
+	BIPUSH 65
+	BIPUSH 77
+	BIPUSH 78
+	BIPUSH 32
+	BIPUSH 44 
+	OUT
+	OUT
+	OUT
+	OUT
+	OUT
+	OUT
+	OUT
+    OUT
+    LDC_W OBJREF
+	ILOAD nmax
+	INVOKEVIRTUAL printNumber
+	IRETURN//Ritorno Il valore inutile ritornato dalla funzione mi conviene rispetto a fare un POP ed un BIPUSH
+.end-method
