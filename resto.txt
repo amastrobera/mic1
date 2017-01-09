@@ -1,0 +1,353 @@
+SP is 0x8000
+
+Cycle 5
+MAR store 0x8001
+SP same
+
+cycle 6
+
+cycle 7
+
+
+
+=====
+cycle 8: PC +1 
+=====
+
+cycle 9
+SP is 0x8002
+
+cycle 10
+
+cycle 11
+
+=====
+cycle 12: PC +1 
+=====
+
+cycle 13
+MAR store 0x8003
+
+cycle 14
+
+cycle 15
+
+
+
+
+
+sumdif1 MAR = SP = SP - 1; rd		// Read in next-to-top word on stack
+sumdif2	H = TOS				        // H = top of stack
+sumdif3	MDR = TOS = MDR + H; wr;    // Add top two words; write to top of stack
+sumdif4 MAR = SP = SP - 1; rd		// Read in next-to-top word on stack
+sumdif5 H = TOS				        // H = top of stack
+sumdif6 MDR = TOS = MDR + H; wr; goto Main1    // again, and return
+
+
+
+
+
+//A) (1,1,1) -> (1)
+test1:
+    //printing test data
+    LDC_W OBJREF
+    BIPUSH 1    //test number
+    INVOKEVIRTUAL printTestDataBegin
+    LDC_W OBJREF
+    BIPUSH 1    //data list
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 1
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 1
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 1    //expected result
+    BIPUSH 0
+    INVOKEVIRTUAL printTestDataEnd
+
+    BIPUSH 1    //data list (copied again)
+    BIPUSH 1
+    BIPUSH 1
+    SUMDIF       //instruction to test
+    BIPUSH 1    //expected result
+    ISUB
+    IFEQ pass1
+    LDC_W OBJREF
+    INVOKEVIRTUAL printFail
+    POP
+    GOTO test2
+    
+pass1:
+    LDC_W OBJREF
+    INVOKEVIRTUAL printPass
+    POP
+
+//B) (1,2,3) -> (6)
+test2:
+    //printing test data
+    LDC_W OBJREF
+    BIPUSH 2    //test number
+    INVOKEVIRTUAL printTestDataBegin
+    LDC_W OBJREF
+    BIPUSH 1    //data list
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 2
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 3
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 6    //expected result
+    BIPUSH 0
+    INVOKEVIRTUAL printTestDataEnd
+
+    BIPUSH 1    //data list (copied again)
+    BIPUSH 2
+    BIPUSH 3
+    SUMDIF       //instruction to test
+    BIPUSH 6    //expected result
+    ISUB
+    IFEQ pass2
+    LDC_W OBJREF
+    INVOKEVIRTUAL printFail
+    POP
+    GOTO test3
+    
+pass2:
+    LDC_W OBJREF
+    INVOKEVIRTUAL printPass
+    POP
+
+
+//C) (78,2,2) -> (80)
+test3:
+    //printing test data
+    LDC_W OBJREF
+    BIPUSH 3    //test number
+    INVOKEVIRTUAL printTestDataBegin
+    LDC_W OBJREF
+    BIPUSH 78    //data list
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 2
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 2
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 80    //expected result
+    BIPUSH 0
+    INVOKEVIRTUAL printTestDataEnd
+
+    BIPUSH 78    //data list (copied again)
+    BIPUSH 2
+    BIPUSH 2
+    SUMDIF       //instruction to test
+    BIPUSH 80    //expected result
+    ISUB
+    IFEQ pass3
+    LDC_W OBJREF
+    INVOKEVIRTUAL printFail
+    POP
+    GOTO test4
+    
+pass3:
+    LDC_W OBJREF
+    INVOKEVIRTUAL printPass
+    POP
+    
+
+//D) (…, 78,2,78) -> (…, 80)
+test4:
+    //printing test data
+    LDC_W OBJREF
+    BIPUSH 4    //test number
+    INVOKEVIRTUAL printTestDataBegin
+    LDC_W OBJREF
+    INVOKEVIRTUAL printStuff
+    LDC_W OBJREF
+    BIPUSH 78    //data list
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 2
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 78
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 80    //expected result
+    BIPUSH 1
+    INVOKEVIRTUAL printTestDataEnd
+
+    BIPUSH 666   //data list (copied again)
+    BIPUSH 78
+    BIPUSH 2
+    BIPUSH 78
+    SUMDIF       //instruction to test
+    BIPUSH 80    //expected result
+    ISUB
+    IFEQ pass4
+    LDC_W OBJREF
+    INVOKEVIRTUAL printFail
+    POP
+    GOTO test5
+    
+pass4:
+    LDC_W OBJREF
+    INVOKEVIRTUAL printPass
+    POP
+
+//E) (31,31,14) -> (45)
+test5:
+    //printing test data
+    LDC_W OBJREF
+    BIPUSH 5    //test number
+    INVOKEVIRTUAL printTestDataBegin
+    LDC_W OBJREF
+    BIPUSH 31    //data list
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 31
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 14
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 45    //expected result
+    BIPUSH 0
+    INVOKEVIRTUAL printTestDataEnd
+
+    BIPUSH 31   //data list (copied again)
+    BIPUSH 31
+    BIPUSH 14
+    SUMDIF       //instruction to test
+    BIPUSH 45    //expected result
+    ISUB
+    IFEQ pass5
+    LDC_W OBJREF
+    INVOKEVIRTUAL printFail
+    POP
+    GOTO test6
+    
+pass5:
+    LDC_W OBJREF
+    INVOKEVIRTUAL printPass
+    POP
+    
+//F) (64,83,17) -> (160)
+test6:
+    //printing test data
+    LDC_W OBJREF
+    BIPUSH 6    //test number
+    INVOKEVIRTUAL printTestDataBegin
+    LDC_W OBJREF
+    BIPUSH 64    //data list
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 83
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 17
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 160    //expected result
+    BIPUSH 0
+    INVOKEVIRTUAL printTestDataEnd
+
+    BIPUSH 64   //data list (copied again)
+    BIPUSH 83
+    BIPUSH 17
+    SUMDIF       //instruction to test
+    BIPUSH 160    //expected result
+    ISUB
+    IFEQ pass6
+    LDC_W OBJREF
+    INVOKEVIRTUAL printFail
+    POP
+    GOTO test7
+    
+pass6:
+    LDC_W OBJREF
+    INVOKEVIRTUAL printPass
+    POP
+
+//G) (…, 64,1,17) -> (…, 82)
+test7:
+    //printing test data
+    LDC_W OBJREF
+    BIPUSH 7    //test number
+    INVOKEVIRTUAL printTestDataBegin
+    LDC_W OBJREF
+    INVOKEVIRTUAL printStuff
+    LDC_W OBJREF
+    BIPUSH 31    //data list
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 31
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 14
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 45    //expected result
+    BIPUSH 1
+    INVOKEVIRTUAL printTestDataEnd
+
+    BIPUSH 31   //data list (copied again)
+    BIPUSH 31
+    BIPUSH 14
+    SUMDIF       //instruction to test
+    BIPUSH 45    //expected result
+    ISUB
+    IFEQ pass7
+    LDC_W OBJREF
+    INVOKEVIRTUAL printFail
+    POP
+    GOTO test8
+    
+pass7:
+    LDC_W OBJREF
+    INVOKEVIRTUAL printPass
+    POP
+    
+    
+//H) (17,64,1) -> (82)
+test8:
+    //printing test data
+    LDC_W OBJREF
+    BIPUSH 8    //test number
+    INVOKEVIRTUAL printTestDataBegin
+    LDC_W OBJREF
+    BIPUSH 17    //data list
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 64
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 1
+    INVOKEVIRTUAL printTestDataElement
+    LDC_W OBJREF
+    BIPUSH 82    //expected result
+    BIPUSH 0
+    INVOKEVIRTUAL printTestDataEnd
+
+    BIPUSH 17   //data list (copied again)
+    BIPUSH 64
+    BIPUSH 1
+    SUMDIF       //instruction to test
+    BIPUSH 82    //expected result
+    ISUB
+    IFEQ pass8
+    LDC_W OBJREF
+    INVOKEVIRTUAL printFail
+    POP
+    GOTO end
+    
+pass8:
+    LDC_W OBJREF
+    INVOKEVIRTUAL printPass
+    POP
+
