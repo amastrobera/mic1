@@ -17,12 +17,8 @@
 //
 
 // labeled statements are "anchored" at the specified control store address
+//normal instrutions
 .label	nop1		0x00
-//personal excercises
-.label  i3add1      0x01
-.label  sumdif1     0x05
-
-//normal labels
 .label	bipush1		0x10
 .label	ldc_w1		0x13
 .label	iload1		0x15
@@ -49,6 +45,10 @@
 .label	out1		0xFD
 .label	in1		    0xFC
 
+//personal excercises
+.label  i3add1      0x01   
+.label  sumdif1     0x02   
+
 
 // default instruction to place in any unused addresses of the control store
 .default	goto err1
@@ -56,9 +56,14 @@
 Main1	PC = PC + 1; fetch; goto (MBR)	// MBR holds opcode; get next byte; dispatch
 
 nop1	goto Main1			// Do nothing
+    
+    
+//normal instructions 
+iadd1	MAR = SP = SP - 1; rd		// Read in next-to-top word on stack
+iadd2	H = TOS				// H = top of stack
+iadd3	MDR = TOS = MDR + H; wr; goto Main1	// Add top two words; write to top of stack
 
-
-//personal excercises
+//personal excercise
 //sum of three characters
 i3add1  MAR = SP = SP - 1; rd		// Read in next-to-top word on stack
 i3add2	H = TOS				        // H = top of stack
@@ -67,29 +72,23 @@ i3add4  MAR = SP = SP - 1; rd		// Read in next-to-top word on stack
 i3add5	H = TOS				        // H = top of stack
 i3add6	MDR = TOS = MDR + H; wr; goto Main1    // again, and return
 
+//personal excercise
 //sum of three characters on the stack, without repetitions
-sumdiff1	MAR = SP = SP - 1; rd
-sumdiff2	H = MDR; rd
-sumdiff3	N = TOS
-sumdiff4	TOS = MDR       //TOS contains the sum, starting from the first number
-sumdiff5	Z = H - N; if (Z) goto sumdiff6; else goto sumdiff7 //check for duplicates
-sumdiff6    MDR = TOS = Z + H; wr; goto sumdiff8  //if not duplicate add on the stack
-sumdiff7    MDR = TOS; wr                 //else do nothing
+//first
+sumdif1	    MAR = SP; rd
+sumdif2	    H = MDR         //sum the first
+//second
+sumdif3	    MAR = SP - 1; rd 
+//sumdif4     Z = H - MDR; if (Z) goto sumdif6; else goto sumdif5 
+sumdif4     H = H + MDR     //sum the second, if different from the first
 
-sumdiff8	MAR = SP = SP - 1; rd
-sumdiff9	H = MDR; rd
-sumdiff10	N = TOS
-sumdiff11	TOS = MDR       //TOS contains the sum, starting from the first number
-sumdiff12	Z = H - N; if (Z) goto sumdiff13; else goto sumdiff14 //check duplicates
-sumdiff13   MDR = TOS = Z + H; wr; goto sumdiff15  //if not duplicate add on the stack
-sumdiff14   MDR = TOS; wr                 //else do nothing
-sumdif15    goto Main1    // again, and return
+//third
+sumdif5     MDR = TOS = H; wr; goto Main1
+
+//ad ogni pass scorri lo stack con SP, SP-1, SP-2 e verifica
+// che il dato puntato da SP sia unico. in quel caso aggiungi la somma ad H
 
 
-//normal instructions 
-iadd1	MAR = SP = SP - 1; rd		// Read in next-to-top word on stack
-iadd2	H = TOS				// H = top of stack
-iadd3	MDR = TOS = MDR + H; wr; goto Main1	// Add top two words; write to top of stack
 
 isub1	MAR = SP = SP - 1; rd		// Read in next-to-top word on stack
 isub2	H = TOS				// H = top of stack
@@ -150,6 +149,7 @@ ldc_w1	PC = PC + 1; fetch		// MBR contains 1st index byte; fetch 2nd
 ldc_w2	H = MBRU << 8			// H = 1st index byte << 8
 ldc_w3	H = MBRU OR H			// H = 16-bit index into constant pool
 ldc_w4	MAR = H + CPP; rd; goto iload3	// MAR = address of constant in pool
+
 
 iinc1	H = LV				// MBR contains index; Copy LV to H
 iinc2	MAR = MBRU + H; rd		// Copy LV + index to MAR; Read variable

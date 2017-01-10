@@ -9,13 +9,23 @@
 
 .main
 
+.var
+        result
+.end-var
+
 //A) (1,1,1) -> (1)
 test1:
-    //printing test data
     BIPUSH 1    //data list (copied again)
     BIPUSH 1
     BIPUSH 1
     SUMDIF       //instruction to test
+    
+    ISTORE result
+    LDC_W OBJREF
+    ILOAD result
+    INVOKEVIRTUAL printNum
+    ISTORE result
+    
     BIPUSH 1    //expected result
     ISUB
     IFEQ pass1
@@ -29,7 +39,31 @@ pass1:
     INVOKEVIRTUAL printPass
     POP
 
-test2:    
+test2:
+    BIPUSH 1    //data list (copied again)
+    BIPUSH 2
+    BIPUSH 1
+    SUMDIF       //instruction to test
+
+    ISTORE result
+    LDC_W OBJREF
+    ILOAD result
+    INVOKEVIRTUAL printNum
+    ISTORE result
+    
+    BIPUSH 3    //expected result
+    ISUB
+    IFEQ pass2
+    LDC_W OBJREF
+    INVOKEVIRTUAL printFail
+    POP
+    GOTO end
+    
+pass2:
+    LDC_W OBJREF
+    INVOKEVIRTUAL printPass
+    POP
+
 
 end:
     POP

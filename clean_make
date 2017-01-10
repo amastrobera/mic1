@@ -1,0 +1,7 @@
+#! /bin/bash
+
+echo "  >> clean Micro program mic1ivjm ... "
+rm mic1ijvm.mic1
+echo "  >> clean the IJVM program for $1 ..."
+rm "source_ijvm/$1.ijvm"
+

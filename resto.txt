@@ -36,6 +36,9 @@ cycle 15
 
 
 
+
+
+
 sumdif1 MAR = SP = SP - 1; rd		// Read in next-to-top word on stack
 sumdif2	H = TOS				        // H = top of stack
 sumdif3	MDR = TOS = MDR + H; wr;    // Add top two words; write to top of stack
