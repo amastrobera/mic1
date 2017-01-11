@@ -15,7 +15,7 @@
 
 //A) (1,1,1) -> (1)
 test1:
-    BIPUSH 1    //data list (copied again)
+    BIPUSH 4    //data list (copied again)
     BIPUSH 1
     BIPUSH 1
     SUMDIF       //instruction to test
@@ -24,9 +24,9 @@ test1:
     LDC_W OBJREF
     ILOAD result
     INVOKEVIRTUAL printNum
-    ISTORE result
+    ILOAD result
     
-    BIPUSH 1    //expected result
+    BIPUSH 5    //expected result
     ISUB
     IFEQ pass1
     LDC_W OBJREF
@@ -49,7 +49,7 @@ test2:
     LDC_W OBJREF
     ILOAD result
     INVOKEVIRTUAL printNum
-    ISTORE result
+    ILOAD result
     
     BIPUSH 3    //expected result
     ISUB
@@ -57,9 +57,34 @@ test2:
     LDC_W OBJREF
     INVOKEVIRTUAL printFail
     POP
-    GOTO end
-    
+    GOTO test3
+
 pass2:
+    LDC_W OBJREF
+    INVOKEVIRTUAL printPass
+    POP
+
+test3:
+    BIPUSH 1    //data list (copied again)
+    BIPUSH 1
+    BIPUSH 3
+    SUMDIF       //instruction to test
+
+    ISTORE result
+    LDC_W OBJREF
+    ILOAD result
+    INVOKEVIRTUAL printNum
+    ILOAD result
+    
+    BIPUSH 4    //expected result
+    ISUB
+    IFEQ pass3
+    LDC_W OBJREF
+    INVOKEVIRTUAL printFail
+    POP
+    GOTO end
+
+pass3:
     LDC_W OBJREF
     INVOKEVIRTUAL printPass
     POP

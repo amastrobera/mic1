@@ -75,19 +75,59 @@ i3add6	MDR = TOS = MDR + H; wr; goto Main1    // again, and return
 //personal excercise
 //sum of three characters on the stack, without repetitions
 //first
-sumdif1	    MAR = SP; rd
-sumdif2	    H = MDR         //sum the first
-//second
-sumdif3	    MAR = SP - 1; rd 
-//sumdif4     Z = H - MDR; if (Z) goto sumdif6; else goto sumdif5 
-sumdif4     H = H + MDR     //sum the second, if different from the first
+//1,1,1
+//1,2,1
 
-//third
-sumdif5     MDR = TOS = H; wr; goto Main1
+//stack    sum  TOS   H    MDR
+//4,1,1     1    1    1     
+//1,2,1     4
+//1,1,3     5
 
-//ad ogni pass scorri lo stack con SP, SP-1, SP-2 e verifica
-// che il dato puntato da SP sia unico. in quel caso aggiungi la somma ad H
+//put top of the stack above SP position (SP+1)
+sumdif1  H = TOS
+sumdif2  MAR = SP + 1
+sumdif3  MDR = H; wr
 
+//save the next-to-top, compare it with top-of-stack and add it to SP+1
+sumdif4  MAR = SP - 1; rd
+sumdif5  Z = MDR - H; if (Z) goto sumdif11; else goto sumdif6
+sumdif6  H = MDR
+sumdif7  MAR = SP + 1
+sumdif8  MDR = MDR + H; wr
+sumdif9  MAR = SP; rd
+sumdif10 H = MDR
+
+sumdif11 MAR = SP - 2; rd
+sumdif12 Z = MDR - H; if (Z) goto sumdif19; else goto sumdif13
+sumdif13 MAR = SP - 1; rd
+sumdif14 H = MDR
+sumdif15 MAR = SP - 2; rd
+sumdif16 Z = MDR - H; if (Z) goto sumdif19; else goto sumdif17
+sumdif17 MAR = SP + 1
+sumdif18 MDR = MDR + H; wr
+
+//write result 
+sumdif19 MAR = SP + 1//; rd
+sumdif20 H = MDR
+sumdif21 MAR = SP - 3; 
+sumdif22 MDR = H; wr; goto Main1
+
+//sumdif1 MAR = SP = SP - 1; rd
+//sumdif2 H = MDR
+//sumdif3 MAR = SP = SP - 1; rd
+//sumdif4 H = H + MDR
+//sumdif5 MAR = SP = SP - 1; rd
+//sumdif6 H = H + MDR
+//sumdif7 MDR = TOS = H; wr; goto Main1
+
+
+
+//sumdif6 MAR = SP = SP - 1; rd
+//sumdif7 Z = MDR - TOS; if (Z) goto sumdif9; else goto sumdif8
+//sumdif8 H = H + MDR
+//sumdif9 MDR = TOS = H; wr; goto Main1
+
+//sumdif7 N = MDR             //Variable to compare from top to bottom of stack
 
 
 isub1	MAR = SP = SP - 1; rd		// Read in next-to-top word on stack
