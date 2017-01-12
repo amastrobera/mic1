@@ -74,43 +74,70 @@ i3add6	MDR = TOS = MDR + H; wr; goto Main1    // again, and return
 
 //personal excercise
 //sum of three characters on the stack, without repetitions
-//first
-//1,1,1
+//stack
+//4,1,1
 //1,2,1
+//1,1,3
 
-//stack    sum  TOS   H    MDR
-//4,1,1     1    1    1     
-//1,2,1     4
-//1,1,3     5
+// il TOS non si può copiare se stesso come H o MDR
 
-//put top of the stack above SP position (SP+1)
-sumdif1  H = TOS
-sumdif2  MAR = SP + 1
-sumdif3  MDR = H; wr
+//write the first item on top of everything
+sumdif1     MAR = SP; rd
+sumdif2     H = TOS = MDR
+//sum the second item, if not equal to first
+sumdif3     MAR = SP = SP - 1; rd
+sumdif4     Z = MDR - H; if (Z) goto sumdif6; else goto sumdif5
+sumdif5     TOS = H + MDR
+//sum the third item, if different from the first and the second
+//third (MDR) != first (H)
+sumdif6     MAR = SP = SP - 1; rd
+sumdif7     Z = MDR - H; if (Z) goto sumdif15; else goto sumdif8
+//third (H) != second (MDR)
+sumdif8     H = MDR
+sumdif9     MAR = SP = SP + 1; rd
+sumdif10    Z = MDR - H; if (Z) goto sumdif14; else goto sumdif11
+sumdif11    MAR = SP = SP - 1; rd   //down to fill third with MDR
+sumdif12    H = TOS
+sumdif13    TOS = H + MDR; goto sumdif15
 
-//save the next-to-top, compare it with top-of-stack and add it to SP+1
-sumdif4  MAR = SP - 1; rd
-sumdif5  Z = MDR - H; if (Z) goto sumdif11; else goto sumdif6
-sumdif6  H = MDR
-sumdif7  MAR = SP + 1
-sumdif8  MDR = MDR + H; wr
-sumdif9  MAR = SP; rd
-sumdif10 H = MDR
+//return the top of the stack, with the final sum
+sumdif14    MAR = SP = SP - 1 //extra SP -1 
+sumdif15    MDR = TOS; wr; goto Main1 //MDR = TOS = H; wr; goto Main1
 
-sumdif11 MAR = SP - 2; rd
-sumdif12 Z = MDR - H; if (Z) goto sumdif19; else goto sumdif13
-sumdif13 MAR = SP - 1; rd
-sumdif14 H = MDR
-sumdif15 MAR = SP - 2; rd
-sumdif16 Z = MDR - H; if (Z) goto sumdif19; else goto sumdif17
-sumdif17 MAR = SP + 1
-sumdif18 MDR = MDR + H; wr
+// this prints 1 - 1 - 3 (only the top of the stack)
 
-//write result 
-sumdif19 MAR = SP + 1//; rd
-sumdif20 H = MDR
-sumdif21 MAR = SP - 3; 
-sumdif22 MDR = H; wr; goto Main1
+
+
+
+//write the first item on top of everything
+//sumdif1     MAR = SP + 1
+//sumdif2     MDR = TOS; wr
+
+////sum the second item, if not equal to first
+//sumdif3     MAR = SP; rd
+//sumdif4     H = MDR
+//sumdif5     MAR = SP - 1; rd
+//sumdif6     Z = MDR - H; if (Z) goto sumdif10; else goto sumdif7
+//sumdif7     H = MDR 
+//sumdif8     MAR = SP + 1; rd
+//sumdif9     MDR = TOS = MDR + H; wr
+
+//sum the third element if different from the first and the second
+//sumdif10    H = TOS; MAR = SP - 1
+//sumdif11    MAR = SP - 1; rd
+//sumdif12    Z = MDR - H; if (Z) goto sumdif18; else goto sumdif13
+//sumdif13    H = MDR
+//sumdif14    MAR = SP - 1; rd
+//sumdif15    Z = MDR - H; if (Z) goto sumdif19; else goto sumdif16
+//sumdif16    MAR = SP + 1; rd
+//sumdif17    MDR = MDR + H; wr
+//return the top of the stack, with the final sum
+//sumdif18    
+//sumdif19    MAR = SP + 1; rd
+//sumdif20    H = MDR
+//sumdif21    MAR = SP = SP - 1
+//sumdif22    MAR = SP = SP - 1
+//sumdif23    MDR = TOS = H; wr; goto Main1
 
 //sumdif1 MAR = SP = SP - 1; rd
 //sumdif2 H = MDR
@@ -120,14 +147,6 @@ sumdif22 MDR = H; wr; goto Main1
 //sumdif6 H = H + MDR
 //sumdif7 MDR = TOS = H; wr; goto Main1
 
-
-
-//sumdif6 MAR = SP = SP - 1; rd
-//sumdif7 Z = MDR - TOS; if (Z) goto sumdif9; else goto sumdif8
-//sumdif8 H = H + MDR
-//sumdif9 MDR = TOS = H; wr; goto Main1
-
-//sumdif7 N = MDR             //Variable to compare from top to bottom of stack
 
 
 isub1	MAR = SP = SP - 1; rd		// Read in next-to-top word on stack
