@@ -82,9 +82,34 @@ test3:
     LDC_W OBJREF
     INVOKEVIRTUAL printFail
     POP
-    GOTO end
+    GOTO test4
 
 pass3:
+    LDC_W OBJREF
+    INVOKEVIRTUAL printPass
+    POP
+
+test4:
+    BIPUSH 2    //data list (copied again)
+    BIPUSH 4
+    BIPUSH 3
+    SUMDIF       //instruction to test
+
+    ISTORE result
+    LDC_W OBJREF
+    ILOAD result
+    INVOKEVIRTUAL printNum
+    ILOAD result
+    
+    BIPUSH 9    //expected result
+    ISUB
+    IFEQ pass4
+    LDC_W OBJREF
+    INVOKEVIRTUAL printFail
+    POP
+    GOTO end
+
+pass4:
     LDC_W OBJREF
     INVOKEVIRTUAL printPass
     POP
