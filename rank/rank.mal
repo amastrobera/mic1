@@ -1,0 +1,30 @@
+rank1   H = 1                   // Set H = 1
+rank2   H = H + 1               // Set H = 2
+rank3   MDR = TOS = H = H + 1   // Use TOS as loop index variable. Write 3 in TOS
+rank4   MAR = SP + 1; wr        // Save max index value in SP + 1
+                                // Loop start. When start H = TOS = index
+rank10  MAR = H = SP - H; rd    // Start to read value at SP - index
+rank11  MAR = H + 1; rd         // Start to read value at SP - index + 1
+rank12  H = OPC = MDR           // Save value of SP - index in OPC
+rank13  N = MDR - H; if (N) goto rank20; else goto rank40 
+                                // Test if (SP - index) < (SP - index + 1)
+                                // Swap (SP - index) e (SP - index + 1 value)
+rank20  H = TOS                 // Load current loop index in H
+rank21  MAR = H = SP - H; wr    
+                    // Start to write previous SP - index + 1 value in SP - index location
+rank22  MDR = OPC               // Prepare to write previous SP - index value in SP - index + 1 location
+rank23  MAR = H + 1; wr;        // Start to write previous SP - index value in SP - index + 1 location
+rank24  MAR = SP + 1; rd        // Start to read max index value
+rank25  H = TOS                 // Save current index in H
+rank26  Z = MDR - H; if (Z) goto rank30; else goto rank31 
+                                // Test if current index value == max index value
+
+rank30  TOS = H = TOS - 1; goto rank10 // Decrement loop index and restart the loop
+rank31  TOS = H = TOS + 1; goto rank10 // Increment loop index and restart the loop
+
+rank40  Z = TOS - 1; if (Z) goto rank41; else goto rank42 
+                                // Test if current index value == 1
+rank41  TOS = MDR; goto Main1   // Restore TOS value; End RANK instruction
+rank42  TOS = H = TOS - 1; goto rank10 
+                                // Decrement loop index and restart the loop
+​

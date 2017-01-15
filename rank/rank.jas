@@ -1,0 +1,468 @@
+.Constant
+	objref 0x00	// required for invokevirtual
+.End-Constant
+
+.Main
+	BIPUSH 99
+
+	LDC_W objref
+	BIPUSH 85
+	BIPUSH 87
+	BIPUSH 89
+	BIPUSH 12
+	INVOKEVIRTUAL test
+	POP
+
+	LDC_W objref
+	BIPUSH 1
+	BIPUSH 1
+	BIPUSH 1
+	BIPUSH 1
+	INVOKEVIRTUAL test
+	POP
+
+	LDC_W objref
+	BIPUSH 78
+	BIPUSH 2
+	BIPUSH 2
+	BIPUSH 2
+	INVOKEVIRTUAL test
+	POP
+
+	LDC_W objref
+	BIPUSH 78
+	BIPUSH 2
+	BIPUSH 78
+	BIPUSH 78
+	INVOKEVIRTUAL test
+	POP
+
+	LDC_W objref
+	BIPUSH 31
+	BIPUSH 31
+	BIPUSH 14
+	BIPUSH 14
+	INVOKEVIRTUAL test
+	POP
+
+	LDC_W objref
+	BIPUSH 64
+	BIPUSH 83
+	BIPUSH 17
+	BIPUSH 1
+	INVOKEVIRTUAL test
+	POP
+
+	LDC_W objref
+	BIPUSH 64
+	BIPUSH 1
+	BIPUSH 17
+	BIPUSH 83
+	INVOKEVIRTUAL test
+	POP
+
+	LDC_W objref
+	BIPUSH 17
+	BIPUSH 64
+	BIPUSH 1
+	BIPUSH 83
+	INVOKEVIRTUAL test
+	POP
+
+	BIPUSH 'S'
+	OUT
+	BIPUSH 'T'
+	OUT
+	BIPUSH 'A'
+	OUT
+	BIPUSH 'C'
+	OUT
+	BIPUSH 'K'
+	OUT
+	BIPUSH 0x20
+	OUT
+
+	BIPUSH 99
+	IF_ICMPEQ stackOK
+	BIPUSH 'F'
+	OUT
+	BIPUSH 'A'
+	OUT
+	BIPUSH 'I'
+	OUT
+	BIPUSH 'L'
+	OUT
+	BIPUSH 0x0A
+	OUT
+
+	HALT
+	
+stackOK:
+	BIPUSH 'P'
+	OUT
+	BIPUSH 'A'
+	OUT
+	BIPUSH 'S'
+	OUT
+	BIPUSH 'S'
+	OUT
+	BIPUSH 0x0A
+	OUT
+
+	HALT
+.End-Main
+
+.method test(val1, val2, val3, val4)
+	.var
+		out1
+		out2
+		out3
+		out4
+	.end-var
+
+	BIPUSH '('
+	OUT
+	LDC_W objref
+	ILOAD val1
+	INVOKEVIRTUAL iprint
+	POP
+	BIPUSH ','
+	OUT
+	LDC_W objref
+	ILOAD val2
+	INVOKEVIRTUAL iprint
+	POP
+	BIPUSH ','
+	OUT
+	LDC_W objref
+	ILOAD val3
+	INVOKEVIRTUAL iprint
+	POP
+	BIPUSH ','
+	OUT
+	LDC_W objref
+	ILOAD val4
+	INVOKEVIRTUAL iprint
+	POP
+	BIPUSH ')'
+	OUT
+	
+	ILOAD val1
+	ILOAD val2
+	ILOAD val3
+	ILOAD val4
+	
+	RANK
+	
+	ISTORE out4
+	ISTORE out3
+	ISTORE out2
+	ISTORE out1
+	
+	BIPUSH 0x20
+	OUT
+	BIPUSH '-'
+	OUT
+	BIPUSH '>'
+	OUT
+	BIPUSH 0x20
+	OUT
+	
+	BIPUSH '('
+	OUT
+	LDC_W objref
+	ILOAD out1
+	INVOKEVIRTUAL iprint
+	POP
+	BIPUSH ','
+	OUT
+	LDC_W objref
+	ILOAD out2
+	INVOKEVIRTUAL iprint
+	POP
+	BIPUSH ','
+	OUT
+	LDC_W objref
+	ILOAD out3
+	INVOKEVIRTUAL iprint
+	POP
+	BIPUSH ','
+	OUT
+	LDC_W objref
+	ILOAD out4
+	INVOKEVIRTUAL iprint
+	POP
+	BIPUSH ')'
+	OUT
+	BIPUSH 0xA
+	OUT
+	
+	ILOAD out4
+	ILOAD out3
+	ISUB
+	IFLT err
+	ILOAD out3
+	ILOAD out2
+	ISUB
+	IFLT err
+	ILOAD out2
+	ILOAD out1
+	ISUB
+	IFLT err
+
+	BIPUSH 1
+	BIPUSH 0x0A
+	BIPUSH 'S'
+	BIPUSH 'S'
+	BIPUSH 'A'
+	BIPUSH 'P'
+	
+	GOTO exit
+	
+err:
+	BIPUSH 0
+	BIPUSH 0x0A	
+	BIPUSH 'L'
+	BIPUSH 'I'
+	BIPUSH 'A'
+	BIPUSH 'F'
+	
+	GOTO exit
+	
+exit:
+	OUT
+	OUT
+	OUT
+	OUT
+	OUT
+	
+	IRETURN
+.end-method
+
+.method iprint(val)
+	.var
+		divVal
+		numDigits
+	.end-var
+
+	ILOAD val
+	IFLT negative
+	BIPUSH '+'
+	OUT
+	GOTO init
+
+negative:
+	BIPUSH '-'
+	OUT
+	GOTO init
+
+init:
+	BIPUSH 0
+	ISTORE numDigits
+	
+	LDC_W objref
+	ILOAD val
+	INVOKEVIRTUAL iabs
+	ISTORE divVal
+
+start:
+	LDC_W objref
+	ILOAD divVal
+	BIPUSH 10
+	LDC_W objref
+	ILOAD divVal
+	BIPUSH 10
+
+	INVOKEVIRTUAL idiv
+	ISTORE divVal
+
+	INVOKEVIRTUAL imod
+	IINC numDigits 1
+
+	ILOAD divVal
+	IFEQ printDigit
+	GOTO start
+	
+printDigit:
+	BIPUSH 0x30
+	IADD
+	OUT
+	IINC numDigits -1
+	ILOAD numDigits
+	IFEQ exit
+	GOTO printDigit
+
+exit:
+	BIPUSH 0
+	IRETURN
+.end-method
+
+.method idiv(val1, val2)
+	.var
+		val2abs
+		result
+		resultSign
+	.end-var
+	
+	ILOAD val2						// test 0 division fault
+	IFEQ divZero
+	
+	LDC_W objref					// get result sing
+	ILOAD val1
+	ILOAD val2
+	INVOKEVIRTUAL getOpSign
+	ISTORE resultSign
+	
+	BIPUSH 0						// Iniziallizza il risultato = 0
+	ISTORE result
+
+	LDC_W objref					// set val2 absolute value in val2
+	ILOAD val2
+	INVOKEVIRTUAL iabs
+	ISTORE val2abs
+	
+	LDC_W objref					// use val1 absolute value
+	ILOAD val1
+	INVOKEVIRTUAL iabs
+	
+start:
+	ILOAD val2abs
+	ISUB
+	DUP
+	IFLT exit
+	DUP
+	IFEQ exit
+	IINC result 1
+	GOTO start
+	
+exit:
+	POP
+	ILOAD result
+	ILOAD resultSign
+	BIPUSH -1
+	IF_ICMPEQ exitInv
+	IRETURN
+	
+exitInv:
+	BIPUSH 0
+	SWAP
+	ISUB
+	IRETURN
+	
+divZero:
+	LDC_W objref
+	INVOKEVIRTUAL errDivZero
+.end-method
+
+.method imod(val1, val2)
+	.var
+		val2abs
+		result
+		resultSign
+	.end-var
+	
+	ILOAD val2						// test 0 division fault
+	IFEQ divZero
+	
+	LDC_W objref					// get result sing
+	ILOAD val1
+	ILOAD val2
+	INVOKEVIRTUAL getOpSign
+	ISTORE resultSign
+	
+	LDC_W objref					// set val2 absolute value in val2
+	ILOAD val2
+	INVOKEVIRTUAL iabs
+	ISTORE val2abs
+	
+	LDC_W objref					// use val1 absolute value
+	ILOAD val1
+	INVOKEVIRTUAL iabs
+	DUP
+	ISTORE result
+	
+start:
+	DUP
+	ILOAD val2abs
+	ISUB
+	DUP
+	IFLT exit
+	DUP
+	ISTORE result 
+	GOTO start
+	
+exit:
+	POP
+	ILOAD result
+	ILOAD resultSign
+	BIPUSH -1
+	IF_ICMPEQ exitInv
+	IRETURN
+	
+exitInv:
+	BIPUSH 0
+	SWAP
+	ISUB
+	IRETURN
+	
+divZero:
+	LDC_W objref
+	INVOKEVIRTUAL errDivZero
+.end-method
+
+.method iabs(val1)
+	ILOAD val1
+	DUP
+	IFLT inv
+	IRETURN
+	
+inv:
+	BIPUSH 0
+	SWAP
+	ISUB
+	IRETURN
+.end-method
+
+.method getOpSign(val1, val2)
+	ILOAD val2
+	ILOAD val1
+	IFLT val1N
+	IFLT outN
+	GOTO outP
+
+val1N:
+	IFLT outP
+	GOTO outN
+	
+outN:
+	BIPUSH -1
+	IRETURN
+	
+outP:
+	BIPUSH 1
+	IRETURN
+.end-method
+
+.method errDivZero()
+	BIPUSH 0x0A
+	BIPUSH 'O'
+	BIPUSH 'R'
+	BIPUSH 'E'
+	BIPUSH 'Z'
+	BIPUSH 0x20
+	BIPUSH 'V'
+	BIPUSH 'I'
+	BIPUSH 'D'
+	
+	OUT
+	OUT
+	OUT
+	OUT
+	OUT
+	OUT
+	OUT
+	OUT
+	OUT
+	
+	ERR
+.end-method

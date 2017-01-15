@@ -74,42 +74,44 @@ i3add6	MDR = TOS = MDR + H; wr; goto Main1    // again, and return
 
 //personal excercise
 //sum of three characters on the stack, without repetitions
-//stack
-//4,1,1 //fail: 1
-//1,2,1 //fail: 4
-//1,1,3 //fail: 5
-//2,4,3 //good
+//stack  test result
+//4,1,1     pass: 5
+//1,2,1     pass: 3
+//1,1,3     pass: 4
+//2,4,3     pass: 9
+//2,2,2     pass; 2
 
-// il TOS non si può copiare se stesso come H o MDR
-
-//first (H) vs second (MDR)
+//test 1st ? 2nd
 sumdif1     MAR = SP = SP - 1; rd
-sumdif2     H = TOS //first element is unique, initialize TOS
-sumdif3     Z = MDR - H; if (Z) goto sumdif4; else goto sumdif6 //doesn't work 'sumdif16
-sumdif4     MDR = TOS = H; wr; //this doesn't work //goto Main1
-sumdif5     MAR = SP = SP - 1; rd; goto sumdif12 //2nd repeated, replace with TOS
-sumdif6     MDR = TOS = H + MDR; wr//2nd unique, sum/replace with TOS
-sumdif7     
-sumdif8     OPC = MDR //place 2nd in OPC temporarily
-//first (H) vs third (MRD)
-sumdif9     MAR = SP = SP - 1; rd
-sumdif10    Z = MDR - H; if (Z) goto sumdif15; else goto sumdif11
-sumdif11    H = OPC
-//second (H) vs third (MDR)
-sumdif12    Z = MDR - H; if (Z) goto sumdif16; else goto sumdif13
-sumdif13    H = TOS //3rd unique, sum/replace with TOS
-sumdif14    MDR = TOS = H + MDR; wr; goto Main1
-sumdif15    
-sumdif16    MDR = TOS; wr; goto Main1//3rd repeated, return the previous TOS
+sumdif2     H = TOS
+sumdif3     Z = MDR - H; if (Z) goto sumdif40; else goto sumdif4
+//test 1st != 2nd, 1st ? 3rd
+sumdif4     OPC = MDR //saving 2nd
+sumdif5     MDR = TOS = MDR + H; wr
+sumdif6     MAR = SP = SP - 1; rd
+sumdif7     //cycle to make MAR read the new input
+sumdif8     Z = MDR - H; if (Z) goto sumdif50; else goto sumdif9
+//test 1st != 2nd, 1st != 3rd, 2nd ? 3rd
+sumdif9     H = OPC
+sumdif10    Z = MDR - H; if (Z) goto sumdif51; else goto sumdif11
+//case 1st != 2nd != 3rd, 1st != 3rd
+sumdif11    H = TOS
+sumdif12    MDR = TOS = H + MDR; wr; goto Main1
 
+//test 1st == 2nd ? 3rd
+sumdif40    H = MDR;        // H = 2nd, in the mean
+sumdif41    MAR = SP = SP - 1; rd
+sumdif42    //cycle to make MAR read the new input
+sumdif43    Z = MDR - H; if (Z) goto sumdif52; else goto sumdif44
+//case 1st == 2nd != 3rd
+sumdif44    MDR = TOS = H + MDR; wr; goto Main1
 
-//i3sum1 MAR = SP = SP - 1; rd
-//i3sum2 H = MDR
-//i3sum3 MAR = SP = SP - 1; rd
-//i3sum4 H = H + MDR
-//i3sum5 MAR = SP = SP - 1; rd
-//i3sum6 H = H + MDR
-//i3sum7 MDR = TOS = H; wr; goto Main1
+//case 1st != 2nd == 3rd
+sumdif50
+//case 1st != 2nd, 1st == 3rd
+sumdif51
+//case 1st == 2nd == 3rd
+sumdif52    MDR = TOS; wr; goto Main1
 
 
 isub1	MAR = SP = SP - 1; rd		// Read in next-to-top word on stack
